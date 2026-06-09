@@ -1,0 +1,162 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Phudu:wght@300..900&display=swap');
+
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* Or — palette principale */
+  --color-primary-50: #faf8f3;
+  --color-primary-100: #f5edd8;
+  --color-primary-200: #ebd6a8;
+  --color-primary-300: #ddb66b;
+  --color-primary-400: #c99a2e;
+  --color-primary-500: #b8860b;
+  --color-primary-600: #9a6f09;
+  --color-primary-700: #7d5907;
+  --color-primary-800: #604405;
+  --color-primary-900: #3d2b02;
+
+  /* Neutres chauds (remplace l’ancien vert accent) */
+  --color-accent-50: #fafafa;
+  --color-accent-100: #f4f4f5;
+  --color-accent-200: #e4e4e7;
+  --color-accent-300: #d4d4d8;
+  --color-accent-400: #a1a1aa;
+  --color-accent-500: #71717a;
+  --color-accent-600: #52525b;
+  --color-accent-700: #3f3f46;
+  --color-accent-800: #27272a;
+  --color-accent-900: #18181b;
+
+  /* Succès = or (pas de vert) */
+  --color-success-50: #faf7f0;
+  --color-success-600: #9a6f09;
+  --color-success-800: #604405;
+
+  /* Warning */
+  --color-warning-50: #fffbeb;
+  --color-warning-600: #d97706;
+  --color-warning-800: #92400e;
+
+  /* Danger */
+  --color-danger-50: #fef2f2;
+  --color-danger-600: #dc2626;
+  --color-danger-800: #991b1b;
+
+  /* Gris */
+  --color-gray-50: #fafafa;
+  --color-gray-100: #f4f4f5;
+  --color-gray-200: #e4e4e7;
+  --color-gray-300: #d4d4d8;
+  --color-gray-400: #a1a1aa;
+  --color-gray-500: #71717a;
+  --color-gray-600: #52525b;
+  --color-gray-700: #3f3f46;
+  --color-gray-800: #27272a;
+  --color-gray-900: #18181b;
+
+  /* shadcn */
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.75rem;
+
+  /* Blanc / noir */
+  --background: 0 0% 100%;
+  --foreground: 0 0% 7%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 7%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 7%;
+
+  /* Or */
+  --primary: 43 89% 38%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 0 0% 96%;
+  --secondary-foreground: 0 0% 7%;
+
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 42%;
+
+  /* Accent = noir doux (survols, badges secondaires) */
+  --accent: 0 0% 94%;
+  --accent-foreground: 0 0% 9%;
+
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 0 0% 90%;
+  --input: 0 0% 90%;
+
+  --ring: 43 89% 38%;
+}
+
+.dark {
+  --background: 0 0% 5%;
+  --foreground: 0 0% 96%;
+
+  --card: 0 0% 8%;
+  --card-foreground: 0 0% 96%;
+
+  --popover: 0 0% 8%;
+  --popover-foreground: 0 0% 96%;
+
+  --primary: 43 78% 55%;
+  --primary-foreground: 0 0% 5%;
+
+  --secondary: 0 0% 12%;
+  --secondary-foreground: 0 0% 96%;
+
+  --muted: 0 0% 12%;
+  --muted-foreground: 0 0% 62%;
+
+  --accent: 0 0% 14%;
+  --accent-foreground: 43 78% 55%;
+
+  --destructive: 0 62% 55%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 0 0% 16%;
+  --input: 0 0% 16%;
+
+  --ring: 43 78% 55%;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background font-sans text-foreground;
+  }
+}
