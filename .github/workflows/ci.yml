@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, dev]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Type-check, tests & build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Installer les dépendances
+        run: pnpm install --frozen-lockfile
+
+      - name: Type-check
+        run: pnpm type-check
+
+      - name: Tests unitaires
+        run: pnpm test:unit --run
+
+      - name: Build
+        run: pnpm build-only
+
+  lint:
+    # Informatif tant que les erreurs de lint existantes (composants UI générés, imports
+    # inutilisés) ne sont pas corrigées : le job signale sans bloquer la PR.
+    name: Lint (informatif)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Installer les dépendances
+        run: pnpm install --frozen-lockfile
+
+      - name: oxlint
+        run: pnpm exec oxlint .
+
+      - name: ESLint
+        run: pnpm exec eslint .
