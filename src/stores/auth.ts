@@ -6,6 +6,7 @@ import {
   loginRequest,
   logoutRequest,
   meRequest,
+  refreshRequest,
   registerRequest,
 } from '@/services/auth.service'
 import type {
@@ -105,10 +106,14 @@ export const useAuthStore = defineStore('auth', () => {
     hydrateStores(user.value)
   }
 
-  function logout() {
+  /**
+   * Déconnexion locale. `reason` est affiché sur la page de connexion
+   * (session expirée, compte désactivé, salon suspendu…).
+   */
+  function logout(reason?: string) {
     token.value = null
     user.value = null
-    error.value = null
+    error.value = reason ?? null
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem(USER_KEY)
     useSalonStore().setSalon(null)
@@ -205,8 +210,33 @@ export const useAuthStore = defineStore('auth', () => {
       hydrateStores(mergedUser, subscription)
       void useSubscriptionStore().load()
     } catch {
-      logout()
+      // Si l'intercepteur a déjà déconnecté (avec un motif), ne pas effacer ce motif.
+      if (token.value) logout()
     }
+  }
+
+  // Une seule requête de rafraîchissement à la fois : les appels expirés simultanés l'attendent.
+  let refreshInFlight: Promise<boolean> | null = null
+
+  /** Renouvelle le jeton via POST /auth/refresh. Retourne false si la session ne peut pas être prolongée. */
+  function refresh(): Promise<boolean> {
+    if (!token.value) return Promise.resolve(false)
+    if (refreshInFlight) return refreshInFlight
+
+    const currentToken = token.value
+    refreshInFlight = refreshRequest(currentToken)
+      .then((response) => {
+        if (!response.success || !response.data?.access_token) return false
+        token.value = response.data.access_token
+        localStorage.setItem(TOKEN_KEY, response.data.access_token)
+        return true
+      })
+      .catch(() => false)
+      .finally(() => {
+        refreshInFlight = null
+      })
+
+    return refreshInFlight
   }
 
   async function logoutRemote() {
@@ -227,6 +257,7 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     register,
     fetchMe,
+    refresh,
     logout,
     logoutRemote,
     updateSalonBranding,

@@ -21,20 +21,78 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    /** Ne pas tenter de rafraîchir le jeton sur 401 (appel de rafraîchissement lui-même). */
+    skipAuthRefresh?: boolean
+    /** Requête déjà rejouée après un rafraîchissement. */
+    _retried?: boolean
+  }
+}
+
+/** Messages affichés sur la page de connexion après une déconnexion forcée. */
+const SESSION_END_MESSAGES: Record<string, string> = {
+  token_expired: 'Votre session a expiré. Veuillez vous reconnecter.',
+  token_revoked: 'Votre mot de passe a changé. Veuillez vous reconnecter.',
+  account_disabled: 'Votre compte est désactivé. Contactez l\'administrateur du salon.',
+}
+
+function redirectToLogin() {
+  import('@/router').then(({ default: router }) => {
+    if (router.currentRoute.value.name !== 'login') {
+      void router.push({ name: 'login' })
+    }
+  })
+}
+
 api.interceptors.response.use(
   (response) => response,
-  (error: AxiosError<ApiErrorBody>) => {
+  async (error: AxiosError<ApiErrorBody>) => {
     const url = String(error.config?.url ?? '')
     const isPublic =
       url.includes('/booking/') || url.includes('/rdv/') || url.includes('/plans')
+    const status = error.response?.status
+    const errorCode = error.response?.data?.error
+    const config = error.config
 
-    if (error.response?.status === 401 && !isPublic) {
+    if (status === 401 && !isPublic) {
       const authStore = useAuthStore()
-      if (authStore.token) authStore.logout()
+
+      // Jeton expiré : un rafraîchissement, puis on rejoue la requête d'origine.
+      if (
+        errorCode === 'token_expired' &&
+        authStore.token &&
+        config &&
+        !config.skipAuthRefresh &&
+        !config._retried
+      ) {
+        const refreshed = await authStore.refresh()
+        if (refreshed && authStore.token) {
+          config._retried = true
+          config.headers.Authorization = `Bearer ${authStore.token}`
+          return api(config)
+        }
+      }
+
+      if (authStore.token) {
+        authStore.logout(
+          SESSION_END_MESSAGES[errorCode ?? ''] ?? 'Votre session a expiré. Veuillez vous reconnecter.',
+        )
+        redirectToLogin()
+      }
     }
 
-    if (error.response?.status === 403 && !isPublic) {
-      const code = error.response.data?.code
+    // Salon suspendu ou désactivé par la plateforme : plus aucun accès au back-office.
+    if (status === 403 && !isPublic && (errorCode === 'salon_suspended' || errorCode === 'salon_inactive')) {
+      const authStore = useAuthStore()
+      if (authStore.token) {
+        authStore.logout(error.response?.data?.message ?? 'Ce salon n\'est plus accessible.')
+        redirectToLogin()
+      }
+    }
+
+    if (status === 403 && !isPublic) {
+      const code = error.response?.data?.code
       if (code === 'subscription_expired') {
         import('@/stores/subscription').then(({ useSubscriptionStore }) => {
           useSubscriptionStore().setBlocked(true)
