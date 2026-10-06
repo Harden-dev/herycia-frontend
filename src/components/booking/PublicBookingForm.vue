@@ -23,6 +23,17 @@ const emit = defineEmits<{
 const clientName = ref('')
 const clientPhone = ref('')
 const date = ref('')
+
+/** Bornes alignées sur le backend : pas de date passée, 90 jours maximum à l'avance. */
+const BOOKING_MAX_DAYS_AHEAD = 90
+
+function toIsoDate(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
+const minDate = toIsoDate(new Date())
+const maxDate = toIsoDate(new Date(Date.now() + BOOKING_MAX_DAYS_AHEAD * 24 * 60 * 60 * 1000))
 const time = ref('')
 const userId = ref('')
 const serviceId = ref('')
@@ -140,7 +151,15 @@ function onSubmit() {
       >
         <div class="space-y-2">
           <Label for="booking-date">Date</Label>
-          <Input id="booking-date" v-model="date" type="date" required :disabled="loading" />
+          <Input
+            id="booking-date"
+            v-model="date"
+            type="date"
+            :min="minDate"
+            :max="maxDate"
+            required
+            :disabled="loading"
+          />
         </div>
         <div class="space-y-2">
           <Label for="booking-time">Heure</Label>

@@ -8,6 +8,8 @@ export interface ApiErrorBody {
   success?: boolean
   message?: string
   code?: string
+  /** Code d'erreur d'authentification renvoyé par le backend (token_expired, account_disabled, salon_suspended…) */
+  error?: string
   errors?: Record<string, string[]>
 }
 

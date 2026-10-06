@@ -5,6 +5,7 @@ import type {
   LoginResponseData,
   MeResponseData,
   RegisterPayload,
+  RefreshResponseData,
   RegisterResponseData,
 } from '@/types/auth'
 
@@ -29,5 +30,17 @@ export async function meRequest(): Promise<ApiResponse<MeResponseData>> {
 
 export async function logoutRequest(): Promise<ApiResponse<null>> {
   const { data } = await api.post<ApiResponse<null>>('v1/auth/logout')
+  return data
+}
+
+/**
+ * Renouvelle la session (le jeton peut être expiré, dans la fenêtre de rafraîchissement).
+ * `skipAuthRefresh` évite que l'intercepteur ne tente un rafraîchissement en boucle.
+ */
+export async function refreshRequest(token: string): Promise<ApiResponse<RefreshResponseData>> {
+  const { data } = await api.post<ApiResponse<RefreshResponseData>>('v1/auth/refresh', null, {
+    headers: { Authorization: `Bearer ${token}` },
+    skipAuthRefresh: true,
+  })
   return data
 }

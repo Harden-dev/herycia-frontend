@@ -65,7 +65,8 @@ export interface PublicBookingTracking {
   tracking_link: string
   scheduled_at: string
   status: string
-  notes: string | null
+  /** Plus renvoyé par le suivi public (notes internes au salon) */
+  notes?: string | null
   salon: PublicBookingSalonInfo
   service: {
     name: string
