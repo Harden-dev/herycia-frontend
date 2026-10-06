@@ -27,6 +27,18 @@ const router = createRouter({
       meta: { publicBooking: true },
     },
     {
+      path: '/arrivee/:slug',
+      name: 'checkin',
+      component: () => import('@/views/public/CheckInView.vue'),
+      meta: { publicBooking: true },
+    },
+    {
+      path: '/file/:token',
+      name: 'queue-track',
+      component: () => import('@/views/public/QueueTrackView.vue'),
+      meta: { publicBooking: true },
+    },
+    {
       path: '/login',
       component: () => import('@/layouts/AuthLayout.vue'),
       meta: { guest: true },
