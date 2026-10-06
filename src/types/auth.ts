@@ -83,3 +83,22 @@ export interface RefreshResponseData {
   token_type: string
   expires_in: number | string
 }
+
+export interface ForgotPasswordResponseData {
+  /** Validité du code, en minutes */
+  expires_in: number
+}
+
+export interface VerifyResetCodeResponseData {
+  /** Jeton temporaire autorisant le changement de mot de passe */
+  token: string
+  /** Validité du jeton, en minutes */
+  expires_in: number
+}
+
+export interface ResetPasswordPayload {
+  token: string
+  email: string
+  password: string
+  password_confirmation: string
+}
