@@ -8,6 +8,8 @@ import type { CheckInResult } from '@/types/queue'
 const queue = vi.hoisted(() => ({
   publicCheckIn: vi.fn<typeof QueueService.publicCheckIn>(),
   publicLateChoice: vi.fn<typeof QueueService.publicLateChoice>(),
+  fetchPublicWalkIn: vi.fn<typeof QueueService.fetchPublicWalkIn>(),
+  publicWalkIn: vi.fn<typeof QueueService.publicWalkIn>(),
 }))
 vi.mock('@/services/queue.service', () => queue)
 
@@ -169,5 +171,70 @@ describe('CheckInView', () => {
     const { wrapper } = await mountView('')
     expect(wrapper.text()).toContain('Ce lien est incomplet')
     expect(wrapper.find('form').exists()).toBe(false)
+  })
+
+  it('permet à un client sans rendez-vous de rejoindre la file avec le premier coiffeur disponible', async () => {
+    const services = [{ id: 'svc-1', name: 'Coupe homme', duration_min: 30, price: 2000 }]
+    queue.fetchPublicWalkIn.mockImplementation(async (_slug, _key, serviceId) => ({
+      success: true,
+      message: '',
+      data: {
+        salon: { name: 'Salon Test', slug: 'salon-test' },
+        services,
+        options: serviceId
+          ? {
+              first_available: {
+                stylist: { id: 'st-2', name: 'Aya' },
+                position: 1,
+                estimated_start_at: '2026-10-10T10:00:00+00:00',
+              },
+              stylists: [
+                {
+                  stylist: { id: 'st-1', name: 'Koffi' },
+                  position: 3,
+                  people_ahead: 2,
+                  estimated_start_at: '2026-10-10T11:00:00+00:00',
+                  available: true,
+                },
+                {
+                  stylist: { id: 'st-2', name: 'Aya' },
+                  position: 1,
+                  people_ahead: 0,
+                  estimated_start_at: '2026-10-10T10:00:00+00:00',
+                  available: true,
+                },
+              ],
+            }
+          : null,
+      },
+    }))
+    queue.publicWalkIn.mockResolvedValue({
+      success: true,
+      message: '',
+      data: { status: 'queued', entry },
+    })
+    const { wrapper, router } = await mountView()
+
+    await wrapper.find('[data-testid="walkin-link"]').trigger('click')
+    await flushPromises()
+    await wrapper.find('#walkin-service').setValue('svc-1')
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Premier coiffeur disponible')
+    expect(wrapper.text()).toContain('Aya')
+
+    await wrapper.find('#walkin-name').setValue('Moussa')
+    await wrapper.find('#walkin-phone').setValue('0707999001')
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+
+    expect(queue.publicWalkIn).toHaveBeenCalledWith('salon-test', {
+      key: 'cle',
+      service_id: 'svc-1',
+      stylist_id: null,
+      name: 'Moussa',
+      phone: '0707999001',
+    })
+    expect(router.currentRoute.value.name).toBe('queue-track')
   })
 })

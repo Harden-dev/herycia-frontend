@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import type * as QueueService from '@/services/queue.service'
+import type * as Prestations from '@/services/prestations.service'
 import type { QueueBoard } from '@/types/queue'
 
 const queue = vi.hoisted(() => ({
@@ -9,8 +10,19 @@ const queue = vi.hoisted(() => ({
   applyQueueAction: vi.fn<typeof QueueService.applyQueueAction>(),
   staffCheckIn: vi.fn<typeof QueueService.staffCheckIn>(),
   staffLateChoice: vi.fn<typeof QueueService.staffLateChoice>(),
+  fetchStaffWalkInOptions: vi.fn<typeof QueueService.fetchStaffWalkInOptions>(),
+  staffWalkIn: vi.fn<typeof QueueService.staffWalkIn>(),
+  reassignQueueEntry: vi.fn<typeof QueueService.reassignQueueEntry>(),
 }))
 vi.mock('@/services/queue.service', () => queue)
+vi.mock('@/services/prestations.service', () => ({
+  fetchServices: vi.fn<typeof Prestations.fetchServices>(async () => ({
+    success: true,
+    message: '',
+    data: [{ id: 'svc-1', name: 'Coupe homme', duration_min: 30, price: 2000, is_active: true }],
+    pagination: { total_rows: 1, per_page: 100, current_page: 1, last_page: 1 },
+  })),
+}))
 vi.mock('@/components/layout/AppHeader.vue', () => ({
   default: { template: '<header><slot name="actions" /></header>' },
 }))
@@ -20,6 +32,7 @@ import QueueView from '@/views/QueueView.vue'
 const board: QueueBoard = {
   late_tolerance_minutes: 15,
   stylists: [
+    { id: 'st-2', name: 'Aya', queue: [], expected: [] },
     {
       id: 'st-1',
       name: 'Koffi',
@@ -74,7 +87,7 @@ describe('QueueView', () => {
     queue.applyQueueAction.mockResolvedValue({
       success: true,
       message: '',
-      data: board.stylists[0]!.queue[0]!,
+      data: board.stylists[1]!.queue[0]!,
     })
     const wrapper = mount(QueueView)
     await flushPromises()
@@ -118,5 +131,21 @@ describe('QueueView', () => {
     await flushPromises()
 
     expect(queue.staffCheckIn).toHaveBeenCalledWith('appt-2')
+  })
+
+  it('confie un client en attente à un autre coiffeur', async () => {
+    queue.reassignQueueEntry.mockResolvedValue({
+      success: true,
+      message: '',
+      data: board.stylists[1]!.queue[0]!,
+    })
+    const wrapper = mount(QueueView)
+    await flushPromises()
+
+    const select = wrapper.find('select[aria-label="Changer de coiffeur"]')
+    await select.setValue('st-2')
+    await flushPromises()
+
+    expect(queue.reassignQueueEntry).toHaveBeenCalledWith('entry-1', 'st-2')
   })
 })

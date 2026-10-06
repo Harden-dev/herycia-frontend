@@ -6,8 +6,10 @@ import {
   IconLoader2,
   IconRefresh,
   IconUserCheck,
+  IconUserPlus,
   IconUsersGroup,
 } from '@tabler/icons-vue'
+import WalkInForm from '@/components/queue/WalkInForm.vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,11 +23,15 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { getApiErrorMessage } from '@/lib/api'
 import { toast } from '@/lib/toast'
 import { formatDate, formatTime } from '@/lib/utils'
+import { fetchServices } from '@/services/prestations.service'
 import {
   applyQueueAction,
   fetchQueueBoard,
+  fetchStaffWalkInOptions,
+  reassignQueueEntry,
   staffCheckIn,
   staffLateChoice,
+  staffWalkIn,
 } from '@/services/queue.service'
 import type {
   CheckInResult,
@@ -34,6 +40,9 @@ import type {
   QueueBoard,
   QueueBoardRow,
   QueueExpectedAppointment,
+  WalkInOptions,
+  WalkInPayload,
+  WalkInService,
 } from '@/types/queue'
 
 /** Rafraîchissement automatique du tableau. */
@@ -160,6 +169,66 @@ async function chooseLate(choice: LateChoice) {
   }
 }
 
+/* ---------- V2 : sans rendez-vous et réaffectation ---------- */
+
+const walkInOpen = ref(false)
+const walkInServices = ref<WalkInService[]>([])
+const walkInSubmitting = ref(false)
+
+async function openWalkIn() {
+  walkInOpen.value = true
+  try {
+    const response = await fetchServices({ is_active: true, per_page: 100 })
+    walkInServices.value = response.data.map((s) => ({
+      id: s.id,
+      name: s.name,
+      duration_min: s.duration_min,
+      price: s.price,
+    }))
+  } catch (e) {
+    toast.error(getApiErrorMessage(e))
+  }
+}
+
+async function fetchWalkInOptions(serviceId: string): Promise<WalkInOptions> {
+  return (await fetchStaffWalkInOptions(serviceId)).data
+}
+
+async function submitWalkIn(payload: WalkInPayload) {
+  walkInSubmitting.value = true
+  try {
+    const result = (await staffWalkIn(payload)).data
+    if (result.status === 'queued') {
+      toast.success(
+        `${result.entry.client.name ?? 'Client'} ajouté chez ${result.entry.stylist.name}`,
+      )
+    }
+    walkInOpen.value = false
+    await load()
+  } catch (e) {
+    toast.error(getApiErrorMessage(e))
+  } finally {
+    walkInSubmitting.value = false
+  }
+}
+
+async function reassign(row: QueueBoardRow, event: Event) {
+  const select = event.target as HTMLSelectElement
+  const stylistId = select.value
+  select.value = ''
+  if (!stylistId) return
+  busy.value = `${row.id}:reassign`
+  try {
+    await reassignQueueEntry(row.id, stylistId)
+    toast.success(`${row.client.name ?? 'Client'} confié à un autre coiffeur`)
+    await load()
+  } catch (e) {
+    toast.error(getApiErrorMessage(e))
+  } finally {
+    busy.value = null
+  }
+}
+
 onMounted(() => {
   void load()
   timer = window.setInterval(() => void load(), POLL_INTERVAL_MS)
@@ -174,6 +243,15 @@ onBeforeUnmount(() => window.clearInterval(timer))
       description="Arrivées du jour et ordre de passage par coiffeur"
     >
       <template #actions>
+        <Button
+          size="sm"
+          class="cursor-pointer gap-2"
+          data-testid="walkin-open"
+          @click="openWalkIn"
+        >
+          <IconUserPlus :size="16" />
+          Client sans RDV
+        </Button>
         <Button
           variant="outline"
           size="sm"
@@ -249,6 +327,12 @@ onBeforeUnmount(() => window.clearInterval(timer))
                 >
                   retard
                 </span>
+                <span
+                  v-else-if="row.source === 'walk_in'"
+                  class="ml-1 rounded bg-secondary px-1.5 py-0.5 text-[11px] font-normal text-muted-foreground"
+                >
+                  sans RDV
+                </span>
               </p>
               <p class="text-xs text-muted-foreground">
                 {{ row.service.name }}
@@ -263,7 +347,25 @@ onBeforeUnmount(() => window.clearInterval(timer))
             <span class="rounded-full px-2 py-0.5 text-xs" :class="STATUS_CLASSES[row.status]">
               {{ STATUS_LABELS[row.status] }}
             </span>
-            <div class="flex w-full flex-wrap justify-end gap-2">
+            <div class="flex w-full flex-wrap items-center justify-end gap-2">
+              <select
+                v-if="
+                  (row.status === 'waiting' || row.status === 'called') && board.stylists.length > 1
+                "
+                class="h-8 rounded-md border border-input bg-card px-2 text-xs text-muted-foreground"
+                aria-label="Changer de coiffeur"
+                :disabled="busy !== null"
+                @change="reassign(row, $event)"
+              >
+                <option value="">Changer de coiffeur…</option>
+                <option
+                  v-for="other in board.stylists.filter((s) => s.id !== stylist.id)"
+                  :key="other.id"
+                  :value="other.id"
+                >
+                  {{ other.name }}
+                </option>
+              </select>
               <Button
                 v-for="item in actionsFor(row)"
                 :key="item.action"
@@ -305,7 +407,10 @@ onBeforeUnmount(() => window.clearInterval(timer))
               </span>
               <span class="min-w-0 flex-1 truncate text-sm text-foreground">
                 {{ appointment.client.name }}
-                <span v-if="appointment.is_late" class="ml-1 text-xs text-warning-800"
+                <span v-if="appointment.status === 'no_show'" class="ml-1 text-xs text-danger-800"
+                  >absent</span
+                >
+                <span v-else-if="appointment.is_late" class="ml-1 text-xs text-warning-800"
                   >en retard</span
                 >
               </span>
@@ -329,6 +434,26 @@ onBeforeUnmount(() => window.clearInterval(timer))
         </div>
       </section>
     </div>
+
+    <!-- Client sans rendez-vous saisi à l'accueil -->
+    <Dialog v-model:open="walkInOpen">
+      <DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Client sans rendez-vous</DialogTitle>
+          <DialogDescription>
+            Il sera placé après le dernier de la liste du coiffeur choisi.
+          </DialogDescription>
+        </DialogHeader>
+        <WalkInForm
+          v-if="walkInOpen"
+          :services="walkInServices"
+          :fetch-options="fetchWalkInOptions"
+          :submitting="walkInSubmitting"
+          submit-label="Ajouter à la file"
+          @submit="submitWalkIn"
+        />
+      </DialogContent>
+    </Dialog>
 
     <!-- Choix du client en retard (saisi par l'accueil) -->
     <Dialog v-model:open="lateDialogOpen">

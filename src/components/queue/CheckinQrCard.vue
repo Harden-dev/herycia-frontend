@@ -2,10 +2,13 @@
 import { onMounted, ref } from 'vue'
 import { IconDownload, IconRefresh } from '@tabler/icons-vue'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getApiErrorMessage } from '@/lib/api'
 import { toast } from '@/lib/toast'
 import { fetchCheckinQr, regenerateCheckinQr } from '@/services/queue.service'
+import { updateSalon } from '@/services/salon.service'
 import type { CheckinQr } from '@/types/queue'
 
 const props = defineProps<{ slug: string }>()
@@ -14,12 +17,15 @@ const qr = ref<CheckinQr | null>(null)
 const loading = ref(true)
 const regenerating = ref(false)
 const error = ref<string | null>(null)
+const tolerance = ref(15)
+const savingTolerance = ref(false)
 
 async function load() {
   loading.value = true
   error.value = null
   try {
     qr.value = (await fetchCheckinQr()).data
+    tolerance.value = qr.value.late_tolerance_minutes
   } catch (e) {
     error.value = getApiErrorMessage(e)
   } finally {
@@ -49,6 +55,25 @@ async function regenerate() {
     toast.error(getApiErrorMessage(e))
   } finally {
     regenerating.value = false
+  }
+}
+
+/** Retard toléré avant que le client doive choisir (reprogrammer ou passer après le dernier). */
+async function saveTolerance() {
+  const minutes = Math.round(Number(tolerance.value))
+  if (!Number.isFinite(minutes) || minutes < 0 || minutes > 60) {
+    toast.error('La tolérance doit être comprise entre 0 et 60 minutes.')
+    return
+  }
+  savingTolerance.value = true
+  try {
+    await updateSalon({ late_tolerance_minutes: minutes })
+    if (qr.value) qr.value = { ...qr.value, late_tolerance_minutes: minutes }
+    toast.success('Tolérance de retard enregistrée')
+  } catch (e) {
+    toast.error(getApiErrorMessage(e))
+  } finally {
+    savingTolerance.value = false
   }
 }
 
@@ -86,6 +111,32 @@ onMounted(load)
           class="h-auto w-full max-w-[220px] rounded-lg bg-white p-2 shadow-sm"
         />
       </div>
+
+      <form class="mt-5 space-y-2" @submit.prevent="saveTolerance">
+        <Label for="late-tolerance" class="text-sm font-medium">Retard toléré (minutes)</Label>
+        <div class="flex gap-2">
+          <Input
+            id="late-tolerance"
+            v-model.number="tolerance"
+            type="number"
+            min="0"
+            max="60"
+            class="w-24"
+          />
+          <Button
+            type="submit"
+            variant="outline"
+            class="cursor-pointer"
+            :disabled="savingTolerance || tolerance === qr.late_tolerance_minutes"
+          >
+            Enregistrer
+          </Button>
+        </div>
+        <p class="text-xs text-muted-foreground">
+          Au-delà, le client choisit : passer après le dernier ou revenir un autre jour à la même
+          heure.
+        </p>
+      </form>
 
       <div class="mt-4 flex flex-col gap-2 sm:flex-row lg:flex-col">
         <Button

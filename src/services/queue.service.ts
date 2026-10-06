@@ -8,6 +8,9 @@ import type {
   QueueAction,
   QueueBoard,
   QueueBoardRow,
+  PublicWalkInData,
+  WalkInOptions,
+  WalkInPayload,
 } from '@/types/queue'
 
 /* ---------- Public : arrivée au salon et suivi ---------- */
@@ -82,5 +85,50 @@ export async function fetchCheckinQr(): Promise<ApiResponse<CheckinQr>> {
 
 export async function regenerateCheckinQr(): Promise<ApiResponse<CheckinQr>> {
   const { data } = await api.post<ApiResponse<CheckinQr>>('v1/salon/checkin-qr/regenerate')
+  return data
+}
+
+/* ---------- V2 : sans rendez-vous et réaffectation ---------- */
+
+export async function fetchPublicWalkIn(
+  slug: string,
+  key: string,
+  serviceId?: string,
+): Promise<ApiResponse<PublicWalkInData>> {
+  const { data } = await api.get<ApiResponse<PublicWalkInData>>(`checkin/${slug}/walk-in`, {
+    params: { key, service_id: serviceId },
+  })
+  return data
+}
+
+export async function publicWalkIn(
+  slug: string,
+  payload: WalkInPayload & { key: string },
+): Promise<ApiResponse<CheckInResult>> {
+  const { data } = await api.post<ApiResponse<CheckInResult>>(`checkin/${slug}/walk-in`, payload)
+  return data
+}
+
+export async function fetchStaffWalkInOptions(
+  serviceId: string,
+): Promise<ApiResponse<WalkInOptions>> {
+  const { data } = await api.get<ApiResponse<WalkInOptions>>('v1/queue/walk-in-options', {
+    params: { service_id: serviceId },
+  })
+  return data
+}
+
+export async function staffWalkIn(payload: WalkInPayload): Promise<ApiResponse<CheckInResult>> {
+  const { data } = await api.post<ApiResponse<CheckInResult>>('v1/queue/walk-in', payload)
+  return data
+}
+
+export async function reassignQueueEntry(
+  entryId: string,
+  stylistId: string,
+): Promise<ApiResponse<QueueBoardRow>> {
+  const { data } = await api.patch<ApiResponse<QueueBoardRow>>(`v1/queue/${entryId}/reassign`, {
+    stylist_id: stylistId,
+  })
   return data
 }

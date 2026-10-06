@@ -15,8 +15,20 @@ import { Label } from '@/components/ui/label'
 import { getApiErrorMessage } from '@/lib/api'
 import { findTodayBooking } from '@/lib/booking-memory'
 import { formatDate, formatTime } from '@/lib/utils'
-import { publicCheckIn, publicLateChoice } from '@/services/queue.service'
-import type { CheckInResult, LateChoice } from '@/types/queue'
+import WalkInForm from '@/components/queue/WalkInForm.vue'
+import {
+  fetchPublicWalkIn,
+  publicCheckIn,
+  publicLateChoice,
+  publicWalkIn,
+} from '@/services/queue.service'
+import type {
+  CheckInResult,
+  LateChoice,
+  WalkInOptions,
+  WalkInPayload,
+  WalkInService,
+} from '@/types/queue'
 import '@/assets/booking.css'
 
 const route = useRoute()
@@ -82,6 +94,44 @@ async function choose(choice: LateChoice) {
     error.value = getApiErrorMessage(e)
   } finally {
     choosing.value = null
+  }
+}
+
+/* ---------- Client sans rendez-vous ---------- */
+
+const walkInMode = ref(false)
+const walkInServices = ref<WalkInService[]>([])
+const walkInLoading = ref(false)
+const walkInSubmitting = ref(false)
+
+async function startWalkIn() {
+  error.value = null
+  walkInMode.value = true
+  walkInLoading.value = true
+  try {
+    walkInServices.value = (await fetchPublicWalkIn(slug, key)).data.services
+  } catch (e) {
+    error.value = getApiErrorMessage(e)
+  } finally {
+    walkInLoading.value = false
+  }
+}
+
+async function fetchWalkInOptions(serviceId: string): Promise<WalkInOptions> {
+  const options = (await fetchPublicWalkIn(slug, key, serviceId)).data.options
+  if (!options) throw new Error('Estimation indisponible.')
+  return options
+}
+
+async function submitWalkIn(payload: WalkInPayload) {
+  error.value = null
+  walkInSubmitting.value = true
+  try {
+    await handleResult((await publicWalkIn(slug, { ...payload, key })).data)
+  } catch (e) {
+    error.value = getApiErrorMessage(e)
+  } finally {
+    walkInSubmitting.value = false
   }
 }
 
@@ -204,6 +254,36 @@ function dayAndTime(iso: string | null | undefined): string {
           </button>
         </div>
 
+        <!-- Sans rendez-vous -->
+        <div v-else-if="walkInMode" class="space-y-4">
+          <div>
+            <h1 class="text-lg font-semibold text-foreground">Sans rendez-vous</h1>
+            <p class="mt-1 text-sm text-muted-foreground">
+              Choisissez votre prestation : vous serez placé après le dernier de la liste.
+            </p>
+          </div>
+          <p
+            v-if="walkInLoading"
+            class="inline-flex items-center gap-2 text-sm text-muted-foreground"
+          >
+            <IconLoader2 :size="16" class="animate-spin" /> Chargement…
+          </p>
+          <WalkInForm
+            v-else
+            :services="walkInServices"
+            :fetch-options="fetchWalkInOptions"
+            :submitting="walkInSubmitting"
+            @submit="submitWalkIn"
+          />
+          <button
+            type="button"
+            class="w-full text-center text-sm font-medium text-primary-600 hover:text-primary-800"
+            @click="walkInMode = false"
+          >
+            J’ai un rendez-vous
+          </button>
+        </div>
+
         <!-- Enregistrement -->
         <div v-else class="space-y-4">
           <div>
@@ -256,6 +336,15 @@ function dayAndTime(iso: string | null | undefined): string {
               Je suis arrivé
             </Button>
           </form>
+
+          <button
+            type="button"
+            class="w-full text-center text-sm font-medium text-primary-600 hover:text-primary-800"
+            data-testid="walkin-link"
+            @click="startWalkIn"
+          >
+            Pas de rendez-vous ? Rejoindre la file
+          </button>
         </div>
       </div>
     </main>
