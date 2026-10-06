@@ -2,11 +2,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { createPinia, setActivePinia } from 'pinia'
+import type * as AuthService from '@/services/auth.service'
 
 const services = vi.hoisted(() => ({
-  forgotPasswordRequest: vi.fn(),
-  verifyResetCodeRequest: vi.fn(),
-  resetPasswordRequest: vi.fn(),
+  forgotPasswordRequest: vi.fn<typeof AuthService.forgotPasswordRequest>(),
+  verifyResetCodeRequest: vi.fn<typeof AuthService.verifyResetCodeRequest>(),
+  resetPasswordRequest: vi.fn<typeof AuthService.resetPasswordRequest>(),
 }))
 vi.mock('@/services/auth.service', () => services)
 

@@ -3,7 +3,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import type { AxiosAdapter, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import { AxiosError } from 'axios'
 
-const push = vi.fn()
+const push = vi.fn<(location: unknown) => void>()
 vi.mock('@/router', () => ({
   default: { currentRoute: { value: { name: 'dashboard' } }, push },
 }))

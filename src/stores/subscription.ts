@@ -9,7 +9,6 @@ import {
   isSubscriptionBlocked,
   isTrial,
   isTrialExpired,
-  needsPayment,
   renewalDaysLeft,
   trialDaysLeft,
 } from '@/lib/subscription'
@@ -18,7 +17,6 @@ import { fetchSubscriptionDetail } from '@/services/subscription.service'
 import type { SubscriptionSummary } from '@/types/auth'
 import type {
   PublicPlan,
-  SalonPlanCode,
   SubscriptionDetailData,
   SubscriptionUsage,
 } from '@/types/plan'

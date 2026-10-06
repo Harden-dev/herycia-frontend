@@ -39,12 +39,10 @@ jobs:
         run: pnpm build-only
 
   lint:
-    # Informatif tant que les erreurs de lint existantes (composants UI générés, imports
-    # inutilisés) ne sont pas corrigées : le job signale sans bloquer la PR.
-    name: Lint (informatif)
+    # Sans --fix : la CI vérifie, elle ne corrige pas (pnpm lint corrige en local).
+    name: Lint
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    continue-on-error: true
 
     steps:
       - uses: actions/checkout@v4

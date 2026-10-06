@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { watchDebounced } from '@vueuse/core'
-import { IconFilter, IconPlus } from '@tabler/icons-vue'
+import { IconFilter } from '@tabler/icons-vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppPagination from '@/components/shared/AppPagination.vue'
 import ListToolbar from '@/components/shared/ListToolbar.vue'
