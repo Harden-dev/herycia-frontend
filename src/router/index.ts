@@ -27,6 +27,18 @@ const router = createRouter({
       meta: { publicBooking: true },
     },
     {
+      path: '/arrivee/:slug',
+      name: 'checkin',
+      component: () => import('@/views/public/CheckInView.vue'),
+      meta: { publicBooking: true },
+    },
+    {
+      path: '/file/:token',
+      name: 'queue-track',
+      component: () => import('@/views/public/QueueTrackView.vue'),
+      meta: { publicBooking: true },
+    },
+    {
       path: '/login',
       component: () => import('@/layouts/AuthLayout.vue'),
       meta: { guest: true },
@@ -35,6 +47,18 @@ const router = createRouter({
           path: '',
           name: 'login',
           component: () => import('@/views/auth/LoginView.vue'),
+        },
+      ],
+    },
+    {
+      path: '/forgot-password',
+      component: () => import('@/layouts/AuthLayout.vue'),
+      meta: { guest: true },
+      children: [
+        {
+          path: '',
+          name: 'forgot-password',
+          component: () => import('@/views/auth/ForgotPasswordView.vue'),
         },
       ],
     },

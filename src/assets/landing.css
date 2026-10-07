@@ -4,7 +4,7 @@
 
 .landing-page {
   -webkit-font-smoothing: antialiased;
-  font-family: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-sans);
   color: hsl(var(--foreground));
   background: hsl(var(--background));
 }

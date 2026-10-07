@@ -13,6 +13,13 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  server: {
+    watch: {
+      // Un ancien .pnpm-store dans le projet contient un lien vers la racine : le surveiller fait
+      // boucler le watcher (ELOOP). Ignoré même si le dossier existe encore localement.
+      ignored: ['**/.pnpm-store/**'],
+    },
+  },
   build: {
     rollupOptions: {
       onLog(level, log, handler) {

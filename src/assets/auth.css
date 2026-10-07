@@ -3,7 +3,7 @@
 ======================================================= */
 
 .auth-page {
-  font-family: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 

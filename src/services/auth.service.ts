@@ -1,12 +1,15 @@
 import api from '@/lib/api'
 import type { ApiResponse } from '@/types/api'
 import type {
+  ForgotPasswordResponseData,
   LoginPayload,
   LoginResponseData,
   MeResponseData,
   RegisterPayload,
   RefreshResponseData,
   RegisterResponseData,
+  ResetPasswordPayload,
+  VerifyResetCodeResponseData,
 } from '@/types/auth'
 
 export async function loginRequest(
@@ -42,5 +45,36 @@ export async function refreshRequest(token: string): Promise<ApiResponse<Refresh
     headers: { Authorization: `Bearer ${token}` },
     skipAuthRefresh: true,
   })
+  return data
+}
+
+/** Étape 1 : envoie un code à 6 chiffres par email (réponse identique que le compte existe ou non). */
+export async function forgotPasswordRequest(
+  email: string,
+): Promise<ApiResponse<ForgotPasswordResponseData>> {
+  const { data } = await api.post<ApiResponse<ForgotPasswordResponseData>>(
+    'v1/auth/forgot-password',
+    { email },
+  )
+  return data
+}
+
+/** Étape 2 : échange le code reçu contre un jeton de réinitialisation temporaire. */
+export async function verifyResetCodeRequest(
+  email: string,
+  code: string,
+): Promise<ApiResponse<VerifyResetCodeResponseData>> {
+  const { data } = await api.post<ApiResponse<VerifyResetCodeResponseData>>(
+    'v1/auth/verify-reset-code',
+    { email, code },
+  )
+  return data
+}
+
+/** Étape 3 : définit le nouveau mot de passe. */
+export async function resetPasswordRequest(
+  payload: ResetPasswordPayload,
+): Promise<ApiResponse<null>> {
+  const { data } = await api.post<ApiResponse<null>>('v1/auth/reset-password', payload)
   return data
 }

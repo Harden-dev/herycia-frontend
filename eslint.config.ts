@@ -22,6 +22,15 @@ export default defineConfigWithVueTs(
   vueTsConfigs.recommended,
 
   {
+    // Composants shadcn-vue générés : noms d'un seul mot par convention (Button, Card…)
+    name: 'app/ui-components',
+    files: ['src/components/ui/**/*.vue'],
+    rules: {
+      'vue/multi-word-component-names': 'off',
+    },
+  },
+
+  {
     ...pluginVitest.configs.recommended,
     files: ['src/**/__tests__/*'],
   },

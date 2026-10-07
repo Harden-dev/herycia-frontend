@@ -7,10 +7,13 @@ import HeryciaLogo from '@/components/brand/HeryciaLogo.vue'
 
 const route = useRoute()
 const isLogin = computed(() => route.name === 'login')
+const isPasswordReset = computed(() => route.name === 'forgot-password')
 const registerTo = computed(() =>
   route.query.plan ? `/register?plan=${route.query.plan}` : '/register',
 )
-const formMaxWidth = computed(() => (isLogin.value ? 'max-w-[420px]' : 'max-w-[580px]'))
+const formMaxWidth = computed(() =>
+  isLogin.value || isPasswordReset.value ? 'max-w-[420px]' : 'max-w-[580px]',
+)
 </script>
 
 <template>
@@ -34,7 +37,7 @@ const formMaxWidth = computed(() => (isLogin.value ? 'max-w-[420px]' : 'max-w-[5
           </p>
         </div>
 
-        <nav class="auth-tabs" aria-label="Connexion ou inscription">
+        <nav v-if="!isPasswordReset" class="auth-tabs" aria-label="Connexion ou inscription">
           <RouterLink to="/login" class="auth-tab" :class="{ 'auth-tab-active': isLogin }">
             Connexion
           </RouterLink>
