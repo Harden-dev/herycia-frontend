@@ -16,7 +16,7 @@ export interface BookingSuccessRecap {
   durationMin?: number
 }
 
-const props = defineProps<{
+defineProps<{
   recap: BookingSuccessRecap
 }>()
 

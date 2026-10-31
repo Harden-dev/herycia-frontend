@@ -32,7 +32,7 @@ const appointments = [
         </div>
         <div class="space-y-2">
           <div
-            v-for="(appt, i) in appointments"
+            v-for="appt in appointments"
             :key="appt.name"
             class="flex items-center justify-between rounded-lg bg-white/10 px-3 py-2"
           >

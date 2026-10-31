@@ -12,6 +12,7 @@ import { getApiErrorMessage } from '@/lib/api'
 import { toast } from '@/lib/toast'
 import { getRdvTrackPath, pathFromTrackingLink } from '@/lib/booking'
 import { createPublicBooking, fetchPublicSalon } from '@/services/booking.service'
+import { rememberBooking } from '@/lib/booking-memory'
 import { isoToDMY } from '@/lib/utils'
 import type { PublicSalonBooking } from '@/types/booking'
 import type { CreatePublicBookingPayload } from '@/types/booking'
@@ -73,6 +74,10 @@ async function onSubmit(payload: CreatePublicBookingPayload) {
     const response = await createPublicBooking(slug, payload)
     if (!response.success) throw new Error(response.message)
     const created = response.data
+    if (created?.tracking_token && created.scheduled_at) {
+      // Permet de s'enregistrer à l'arrivée sans ressaisir son numéro.
+      rememberBooking({ slug, tracking_token: created.tracking_token, scheduled_at: created.scheduled_at })
+    }
     const trackPath =
       (created?.tracking_link && pathFromTrackingLink(created.tracking_link)) ||
       (created?.tracking_token && getRdvTrackPath(created.tracking_token)) ||

@@ -50,7 +50,11 @@ api.interceptors.response.use(
   async (error: AxiosError<ApiErrorBody>) => {
     const url = String(error.config?.url ?? '')
     const isPublic =
-      url.includes('/booking/') || url.includes('/rdv/') || url.includes('/plans')
+      url.includes('/booking/') ||
+      url.includes('/rdv/') ||
+      url.includes('/plans') ||
+      url.startsWith('checkin/') ||
+      url.startsWith('file/')
     const status = error.response?.status
     const errorCode = error.response?.data?.error
     const config = error.config

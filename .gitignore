@@ -42,3 +42,6 @@ __screenshots__/
 .env
 .env.*
 !.env.example
+
+# Store pnpm local (ne jamais versionner : contient un lien vers le projet qui fait boucler le watcher Vite)
+.pnpm-store/

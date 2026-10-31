@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { IconLock, IconPhone } from '@tabler/icons-vue'
 import AuthField from '@/components/auth/AuthField.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
+
+/** Retour du parcours « mot de passe oublié ». */
+const passwordReset = route.query.reset === 'success'
 
 const login = ref('')
 const password = ref('')
@@ -26,6 +30,13 @@ async function onSubmit() {
   <form class="flex flex-col gap-5" @submit.prevent="onSubmit">
     <p v-if="authStore.error" class="rounded-lg bg-danger-50 px-3 py-2 text-xs text-danger-800">
       {{ authStore.error }}
+    </p>
+    <p
+      v-else-if="passwordReset"
+      class="rounded-lg bg-primary-50 px-3 py-2 text-xs text-primary-800"
+      role="status"
+    >
+      Mot de passe modifié. Connectez-vous avec votre nouveau mot de passe.
     </p>
 
     <AuthField
@@ -49,9 +60,12 @@ async function onSubmit() {
     />
 
     <div class="flex justify-end">
-      <a href="#" class="text-xs font-medium text-primary-600 hover:text-primary-800">
+      <RouterLink
+        :to="{ name: 'forgot-password' }"
+        class="text-xs font-medium text-primary-600 hover:text-primary-800"
+      >
         Mot de passe oublié ?
-      </a>
+      </RouterLink>
     </div>
 
     <button type="submit" class="auth-submit mt-1" :disabled="authStore.loading">

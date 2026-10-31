@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { IconCopy, IconDownload, IconUpload } from '@tabler/icons-vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import SettingsSubscriptionCard from '@/components/subscription/SettingsSubscriptionCard.vue'
+import CheckinQrCard from '@/components/queue/CheckinQrCard.vue'
 import { usePaymentCallback } from '@/composables/usePaymentCallback'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -331,6 +332,7 @@ async function downloadQr() {
               {{ downloadingQr ? 'Téléchargement…' : 'Télécharger le QR' }}
             </Button>
           </div>
+          <CheckinQrCard :slug="salon.slug" />
         </aside>
       </div>
     </template>

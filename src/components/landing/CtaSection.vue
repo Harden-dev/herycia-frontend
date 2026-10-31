@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IconArrowRight, IconScissors } from '@tabler/icons-vue'
+import { IconArrowRight } from '@tabler/icons-vue'
 import LandingButton from '@/components/landing/LandingButton.vue'
 import ScrollReveal from '@/components/landing/ScrollReveal.vue'
 import { LANDING_ICON_STROKE } from '@/lib/landing'
