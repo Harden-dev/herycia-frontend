@@ -3,61 +3,65 @@ import '@/assets/auth.css'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import AuthBrandPanel from '@/components/auth/AuthBrandPanel.vue'
-import HeryciaLogo from '@/components/brand/HeryciaLogo.vue'
+import HeryciaWordmark from '@/components/brand/HeryciaWordmark.vue'
 
 const route = useRoute()
 const isLogin = computed(() => route.name === 'login')
-const isPasswordReset = computed(() => route.name === 'forgot-password')
+const isRegister = computed(() => route.name === 'register')
 const registerTo = computed(() =>
   route.query.plan ? `/register?plan=${route.query.plan}` : '/register',
 )
-const formMaxWidth = computed(() =>
-  isLogin.value || isPasswordReset.value ? 'max-w-[420px]' : 'max-w-[580px]',
-)
+const formMaxWidth = computed(() => (isRegister.value ? 'max-w-[560px]' : 'max-w-[400px]'))
+
+/** Titre propre à chaque écran ; « mot de passe oublié » porte le sien. */
+const heading = computed(() => {
+  if (isLogin.value) {
+    return { title: 'Connexion', text: 'Accédez à l’espace de gestion de votre salon.' }
+  }
+  if (isRegister.value) {
+    return {
+      title: 'Créer le compte de votre salon',
+      text: 'Quelques informations suffisent pour commencer.',
+    }
+  }
+  return null
+})
 </script>
 
 <template>
   <div class="auth-page flex min-h-screen bg-card">
-    <!-- Left — form -->
-    <div class="flex flex-1 flex-col px-6 py-8 sm:px-10 lg:px-14 lg:py-10">
-      <div class="mx-auto flex w-full flex-1 flex-col justify-center py-10" :class="formMaxWidth">
-        <RouterLink
-          to="/"
-          class="mb-8 flex justify-center transition-opacity hover:opacity-90"
-        >
-          <HeryciaLogo size="lg" />
-        </RouterLink>
+    <div class="flex flex-1 flex-col px-6 py-8 sm:px-10 lg:px-16">
+      <RouterLink to="/" class="w-fit rounded-lg" aria-label="Herycia, retour à l’accueil">
+        <HeryciaWordmark />
+      </RouterLink>
 
-        <div class="mb-8">
-          <h1 class="text-[28px] font-bold leading-tight text-foreground md:text-[32px]">
-            Bienvenue sur Herycia
+      <main class="mx-auto flex w-full flex-1 flex-col justify-center py-12" :class="formMaxWidth">
+        <div v-if="heading" class="mb-8">
+          <h1 class="text-2xl font-semibold text-foreground md:text-[28px]">
+            {{ heading.title }}
           </h1>
-          <p class="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Gérez votre salon — connectez-vous ou créez votre compte pour commencer.
-          </p>
+          <p class="mt-2 text-sm text-muted-foreground">{{ heading.text }}</p>
         </div>
-
-        <nav v-if="!isPasswordReset" class="auth-tabs" aria-label="Connexion ou inscription">
-          <RouterLink to="/login" class="auth-tab" :class="{ 'auth-tab-active': isLogin }">
-            Connexion
-          </RouterLink>
-          <RouterLink :to="registerTo" class="auth-tab" :class="{ 'auth-tab-active': !isLogin }">
-            Inscription
-          </RouterLink>
-        </nav>
 
         <RouterView />
 
-        <p class="mt-10 text-center text-xs text-muted-foreground">
-          © {{ new Date().getFullYear() }} Herycia ·
-          <a href="#" class="underline-offset-2 hover:underline">Conditions</a>
-          ·
-          <a href="#" class="underline-offset-2 hover:underline">Confidentialité</a>
+        <p v-if="isLogin" class="mt-8 text-center text-sm text-muted-foreground">
+          Pas encore de compte ?
+          <RouterLink :to="registerTo" class="font-medium text-primary-600 hover:text-primary-800">
+            Créer un compte
+          </RouterLink>
         </p>
-      </div>
+        <p v-else-if="isRegister" class="mt-8 text-center text-sm text-muted-foreground">
+          Déjà un compte ?
+          <RouterLink to="/login" class="font-medium text-primary-600 hover:text-primary-800">
+            Se connecter
+          </RouterLink>
+        </p>
+      </main>
+
+      <p class="text-xs text-muted-foreground">© {{ new Date().getFullYear() }} Herycia</p>
     </div>
 
-    <!-- Right — brand -->
     <AuthBrandPanel />
   </div>
 </template>

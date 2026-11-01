@@ -128,9 +128,9 @@ function backToEmail() {
 
 <template>
   <div class="flex flex-col gap-5">
-    <div>
-      <h2 class="text-lg font-semibold text-foreground">Mot de passe oublié</h2>
-      <p class="mt-1 text-sm text-muted-foreground">{{ subtitle }}</p>
+    <div class="mb-3">
+      <h1 class="text-2xl font-semibold text-foreground md:text-[28px]">Mot de passe oublié</h1>
+      <p class="mt-2 text-sm text-muted-foreground">{{ subtitle }}</p>
     </div>
 
     <p v-if="error" class="rounded-lg bg-danger-50 px-3 py-2 text-xs text-danger-800" role="alert">

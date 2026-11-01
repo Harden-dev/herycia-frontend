@@ -197,7 +197,7 @@ async function onSubmit() {
           id="city"
           v-model="city"
           required
-          class="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+          class="auth-input auth-select w-full outline-none"
           :class="fieldErrors.city && 'border-danger-500'"
           :aria-invalid="fieldErrors.city ? true : undefined"
         >
@@ -227,7 +227,7 @@ async function onSubmit() {
     </div>
 
     <button type="submit" class="auth-submit mt-2 cursor-pointer" :disabled="submitting">
-      {{ submitting ? 'Création…' : `Créer mon compte — ${selectedPlan?.name ?? 'Basic'}` }}
+      {{ submitting ? 'Création…' : `Créer mon compte (offre ${selectedPlan?.name ?? 'Basic'})` }}
     </button>
   </form>
 </template>
