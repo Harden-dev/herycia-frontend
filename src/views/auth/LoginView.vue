@@ -44,7 +44,7 @@ async function onSubmit() {
       v-model="login"
       label="Numéro de téléphone"
       type="tel"
-      placeholder="2250708112233"
+      placeholder="07 08 11 22 33"
       required
       :icon="IconPhone"
     />

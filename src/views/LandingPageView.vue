@@ -7,9 +7,8 @@ import HowItWorksSection from '@/components/landing/HowItWorksSection.vue'
 import LandingFooter from '@/components/landing/LandingFooter.vue'
 import LandingNavbar from '@/components/landing/LandingNavbar.vue'
 import PricingSection from '@/components/landing/PricingSection.vue'
-import ProblemSection from '@/components/landing/ProblemSection.vue'
 import PublicBookingSection from '@/components/landing/PublicBookingSection.vue'
-import StatsBar from '@/components/landing/StatsBar.vue'
+import QueueSection from '@/components/landing/QueueSection.vue'
 </script>
 
 <template>
@@ -18,8 +17,7 @@ import StatsBar from '@/components/landing/StatsBar.vue'
     <main>
       <HeroSection />
       <PublicBookingSection />
-      <StatsBar />
-      <ProblemSection />
+      <QueueSection />
       <FeaturesSection />
       <HowItWorksSection />
       <PricingSection />
