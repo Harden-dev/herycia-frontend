@@ -2,6 +2,7 @@
 import { IconLink } from '@tabler/icons-vue'
 import LandingButton from '@/components/landing/LandingButton.vue'
 import LandingSectionHeader from '@/components/landing/LandingSectionHeader.vue'
+import LandingReveal from '@/components/landing/LandingReveal.vue'
 import { getBookingUrl } from '@/lib/booking'
 
 /** Domaine réellement servi (production comprise), sans le protocole. */
@@ -34,12 +35,20 @@ const choices = [
   <section id="reservation" class="px-4 py-16 md:px-10 md:py-24">
     <div class="mx-auto grid max-w-6xl gap-12 lg:grid-cols-2 lg:gap-16">
       <div>
-        <LandingSectionHeader
-          title="Vos clients réservent seuls, à toute heure."
-          description="Chaque salon a son lien de réservation. Vos prestations, vos coiffeurs et vos horaires y sont à jour automatiquement."
-        />
+        <LandingReveal>
+          <LandingSectionHeader
+            title="Vos clients réservent seuls, à toute heure."
+            description="Chaque salon a son lien de réservation. Vos prestations, vos coiffeurs et vos horaires y sont à jour automatiquement."
+          />
+        </LandingReveal>
         <ol class="space-y-6">
-          <li v-for="(step, index) in steps" :key="step.title" class="flex gap-4">
+          <LandingReveal
+            v-for="(step, index) in steps"
+            :key="step.title"
+            as="li"
+            :delay="0.1 + index * 0.1"
+            class="flex gap-4"
+          >
             <span
               class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border font-display text-sm font-semibold text-foreground"
             >
@@ -49,31 +58,34 @@ const choices = [
               <h3 class="text-base font-semibold text-foreground">{{ step.title }}</h3>
               <p class="mt-1 text-[15px] leading-relaxed text-muted-foreground">{{ step.text }}</p>
             </div>
-          </li>
+          </LandingReveal>
         </ol>
       </div>
 
-      <figure class="self-center">
+      <LandingReveal :delay="0.15" class="self-center">
+      <figure>
         <div class="rounded-xl border border-border bg-card">
           <div class="flex items-center gap-2 border-b border-border px-5 py-3.5">
             <IconLink :size="16" class="shrink-0 text-muted-foreground" aria-hidden="true" />
             <span class="truncate font-mono text-sm text-foreground">{{ exampleLink }}</span>
           </div>
           <dl class="divide-y divide-border">
-            <div
-              v-for="choice in choices"
+            <LandingReveal
+              v-for="(choice, index) in choices"
               :key="choice.label"
+              :delay="0.3 + index * 0.12"
+              :y="10"
               class="flex items-baseline justify-between gap-4 px-5 py-3.5"
             >
               <dt class="text-sm text-muted-foreground">{{ choice.label }}</dt>
               <dd class="text-right text-sm font-medium text-foreground">{{ choice.value }}</dd>
-            </div>
+            </LandingReveal>
           </dl>
-          <div class="border-t border-border p-4">
+          <LandingReveal :delay="0.85" :y="10" class="border-t border-border p-4">
             <p class="rounded-lg bg-success-50 px-3 py-2.5 text-sm text-success-800">
               Rendez-vous confirmé. Un lien de suivi est envoyé au client.
             </p>
-          </div>
+          </LandingReveal>
         </div>
         <figcaption class="mt-3 text-xs text-muted-foreground">
           Exemple : ce que remplit votre client.
@@ -82,6 +94,7 @@ const choices = [
           <RouterLink to="/register">Créer mon salon et obtenir mon lien</RouterLink>
         </LandingButton>
       </figure>
+      </LandingReveal>
     </div>
   </section>
 </template>

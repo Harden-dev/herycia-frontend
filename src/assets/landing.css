@@ -18,3 +18,34 @@
   background: hsl(var(--foreground));
   color: #fff;
 }
+
+/* Trame de points discrète derrière le hero, fondue vers les bords. */
+.landing-dots {
+  background-image: radial-gradient(rgb(0 0 0 / 7%) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%);
+}
+
+/* Bandeau défilant (marquee). */
+@keyframes landing-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.landing-marquee-track {
+  animation: landing-marquee 32s linear infinite;
+}
+
+.landing-marquee:hover .landing-marquee-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-marquee-track {
+    animation: none;
+  }
+}

@@ -8,6 +8,19 @@ const plansService = vi.hoisted(() => ({
 }))
 vi.mock('@/services/plans.service', () => plansService)
 
+// jsdom n'implémente pas IntersectionObserver, utilisé par les apparitions au défilement.
+vi.stubGlobal(
+  'IntersectionObserver',
+  class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+    takeRecords() {
+      return []
+    }
+  },
+)
+
 import PricingSection from '@/components/landing/PricingSection.vue'
 
 const mountSection = () => mount(PricingSection, { global: { stubs: { RouterLink: RouterLinkStub } } })
