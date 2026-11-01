@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useIntersectionObserver } from '@vueuse/core'
 import { motion, useReducedMotion } from 'motion-v'
-import { IconArrowRight, IconCheck } from '@tabler/icons-vue'
+import { IconArrowRight } from '@tabler/icons-vue'
 import LandingButton from '@/components/landing/LandingButton.vue'
 import HeroDemo from '@/components/landing/hero/HeroDemo.vue'
 
@@ -72,24 +72,13 @@ const enter = (delay: number) => ({
     </div>
 
     <div
-      class="relative mx-auto grid max-w-6xl items-center gap-14 py-14 md:py-20 lg:grid-cols-[1.05fr_1fr] lg:gap-10"
+      class="relative mx-auto grid max-w-6xl items-center gap-14 py-14 md:py-20 lg:grid-cols-[1.25fr_1fr] lg:gap-10"
     >
       <div>
-        <motion.a
-          href="#au-salon"
-          v-bind="enter(0)"
-          class="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-card/80 py-1 pl-1.5 pr-3 text-xs font-medium text-foreground backdrop-blur hover:border-primary-400"
-        >
-          <span class="rounded-full bg-primary-600 px-2 py-0.5 text-[10px] font-semibold text-white">
-            Nouveau
-          </span>
-          File d’attente par QR code
-          <IconArrowRight :size="13" class="text-muted-foreground" />
-        </motion.a>
 
         <motion.h1
           v-bind="enter(0.08)"
-          class="mt-6 text-[32px] font-semibold uppercase leading-[1.08] tracking-tight text-foreground md:text-[46px]"
+          class="text-[32px] font-semibold uppercase leading-[1.06] tracking-tight text-foreground md:text-[46px]"
         >
           Vos clients
           <template v-for="(verb, index) in verbs" :key="verb.label">
@@ -113,15 +102,8 @@ const enter = (delay: number) => ({
           <span class="landing-serif text-[1.18em] leading-none text-primary-600">sans un seul appel.</span>
         </motion.h1>
 
-        <motion.p
-          v-bind="enter(0.16)"
-          class="mt-6 max-w-xl text-[17px] leading-relaxed text-muted-foreground"
-        >
-          Herycia gère la réservation en ligne, l’arrivée par QR code et la file d’attente de
-          chaque coiffeur. Vous suivez tout depuis votre téléphone.
-        </motion.p>
 
-        <motion.div v-bind="enter(0.24)" class="mt-8 flex flex-wrap items-center gap-3">
+        <motion.div v-bind="enter(0.16)" class="mt-10 flex flex-wrap items-center gap-3">
           <LandingButton variant="primary" class="group h-12 rounded-full pl-6 pr-1.5">
             <RouterLink to="/register" class="inline-flex items-center gap-3">
               Essayer 7 jours gratuitement
@@ -137,15 +119,9 @@ const enter = (delay: number) => ({
           </LandingButton>
         </motion.div>
 
-        <motion.ul
-          v-bind="enter(0.32)"
-          class="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground"
-        >
-          <li v-for="item in ['Aucune carte bancaire', 'Sans installation', 'Téléphone ou ordinateur']" :key="item" class="flex items-center gap-1.5">
-            <IconCheck :size="16" class="text-primary-600" />
-            {{ item }}
-          </li>
-        </motion.ul>
+        <motion.p v-bind="enter(0.24)" class="mt-4 text-sm text-muted-foreground">
+          7 jours gratuits · Sans carte bancaire
+        </motion.p>
       </div>
 
       <HeroDemo :step="step" :cycle="cycle" :duration="autoplay ? STEP_MS : 0" @select="select" />
