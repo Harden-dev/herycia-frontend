@@ -1,4 +1,4 @@
-# Herycia — APIs Dashboard (besoins frontend)
+# MANYAN — APIs Dashboard (besoins frontend)
 
 Document de spécification pour l’équipe backend : endpoints nécessaires pour alimenter le **dashboard backoffice** (`/dashboard`) sans données mockées.
 

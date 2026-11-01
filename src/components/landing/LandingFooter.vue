@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import HeryciaWordmark from '@/components/brand/HeryciaWordmark.vue'
+import BrandLogo from '@/components/brand/BrandLogo.vue'
 
 const links = [
   { href: '#reservation', label: 'Parcours client' },
@@ -12,7 +12,7 @@ const links = [
   <footer class="landing-dark px-4 py-12 md:px-10">
     <div class="mx-auto flex max-w-6xl flex-col gap-8 md:flex-row md:items-start md:justify-between">
       <div class="max-w-xs">
-        <HeryciaWordmark tone="dark" />
+        <BrandLogo size="lg" />
         <p class="mt-3 text-sm text-white/60">
           Conçu pour les salons de coiffure en Côte d’Ivoire.
         </p>
@@ -26,7 +26,7 @@ const links = [
       </nav>
     </div>
     <p class="mx-auto mt-10 max-w-6xl border-t border-white/10 pt-6 text-xs text-white/50">
-      © {{ new Date().getFullYear() }} Herycia
+      © {{ new Date().getFullYear() }} MANYAN
     </p>
   </footer>
 </template>

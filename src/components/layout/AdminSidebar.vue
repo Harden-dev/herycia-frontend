@@ -6,7 +6,6 @@ import {
   IconLayoutDashboard,
   IconPackage,
   IconRefresh,
-  IconScissors,
   IconUsers,
 } from '@tabler/icons-vue'
 import { Button } from '@/components/ui/button'
@@ -33,13 +32,9 @@ function isActive(path: string, exact: boolean) {
   <aside class="flex h-full flex-col border-r border-border bg-card">
     <div class="border-b border-border p-4">
       <div class="flex items-center gap-3">
-        <div
-          class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary-600 shadow-sm"
-        >
-          <IconScissors :size="16" :stroke-width="1.5" class="text-white" />
-        </div>
+        <img src="/manyan-icon.png" alt="" class="h-8 w-8 shrink-0 rounded-lg" />
         <div class="min-w-0">
-          <p class="truncate text-sm font-semibold text-foreground">HERYCIA</p>
+          <p class="truncate text-sm font-semibold text-foreground">MANYAN</p>
           <p class="text-[11px] text-muted-foreground">Super Admin</p>
         </div>
       </div>
@@ -72,7 +67,7 @@ function isActive(path: string, exact: boolean) {
 
     <div class="p-4">
       <div class="rounded-lg bg-primary-50 px-3 py-2.5">
-        <p class="text-xs font-medium text-primary-800">Plateforme Herycia</p>
+        <p class="text-xs font-medium text-primary-800">Plateforme MANYAN</p>
         <p class="mt-0.5 text-[11px] text-primary-600/80">Suivi & facturation SaaS</p>
       </div>
     </div>

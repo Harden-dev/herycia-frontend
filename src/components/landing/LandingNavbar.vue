@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import HeryciaWordmark from '@/components/brand/HeryciaWordmark.vue'
+import BrandLogo from '@/components/brand/BrandLogo.vue'
 import LandingButton from '@/components/landing/LandingButton.vue'
 
 const links = [
@@ -12,8 +12,8 @@ const links = [
 <template>
   <header class="sticky top-0 z-50 border-b border-foreground/10 bg-[#f6f2ea] px-4 md:px-10">
     <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 py-3">
-      <RouterLink to="/" class="rounded-lg" aria-label="Herycia, accueil">
-        <HeryciaWordmark />
+      <RouterLink to="/" class="rounded-lg" aria-label="MANYAN, accueil">
+        <BrandLogo size="lg" />
       </RouterLink>
 
       <nav class="hidden items-center gap-7 md:flex" aria-label="Sections">

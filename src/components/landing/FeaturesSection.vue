@@ -39,7 +39,7 @@ const features = [
             0{{ index + 1 }}
           </span>
 
-          <span class="relative block">
+          <h3 class="relative block">
             <span
               class="landing-outline absolute left-0 top-0 translate-x-3 translate-y-2 text-[40px] font-semibold uppercase leading-none tracking-tight text-foreground/25 transition-transform duration-500 group-hover:translate-x-8 group-hover:translate-y-3 md:text-[72px]"
               aria-hidden="true"
@@ -51,7 +51,7 @@ const features = [
             >
               {{ feature.word }}
             </span>
-          </span>
+          </h3>
 
           <span class="text-[15px] leading-relaxed text-muted-foreground transition-opacity duration-500 md:opacity-60 md:group-hover:opacity-100">
             <span

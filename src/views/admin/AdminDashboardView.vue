@@ -42,7 +42,7 @@ onMounted(async () => {
   <div class="flex flex-col gap-6 pb-8">
     <AdminHeader
       title="Dashboard"
-      description="Vue globale de la plateforme Herycia"
+      description="Vue globale de la plateforme MANYAN"
     />
 
     <p v-if="error" class="rounded-lg bg-danger-50 px-4 py-3 text-sm text-danger-800">

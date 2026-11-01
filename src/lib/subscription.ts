@@ -1,7 +1,7 @@
 import { SALON_PLAN_CODES, type SalonPlanCode, type SubscriptionRecord } from '@/types/plan'
 import type { SubscriptionSummary } from '@/types/auth'
 
-export const SELECTED_PLAN_KEY = 'herycia_selected_plan_code'
+export const SELECTED_PLAN_KEY = 'manyan_selected_plan_code'
 
 type SubscriptionLike =
   | Pick<SubscriptionRecord, 'status' | 'is_trial' | 'trial_ends_at' | 'ends_at' | 'plan'>

@@ -30,7 +30,7 @@ const rotate = useTransform(scrollYProgress, [0, 1], [-20, 70])
   <section
     ref="sectionRef"
     class="landing-dark landing-grain overflow-hidden px-4 pb-10 pt-24 md:px-10 md:pb-16 md:pt-36"
-    aria-label="Pourquoi Herycia"
+    aria-label="Pourquoi MANYAN"
   >
     <motion.div
       class="pointer-events-none absolute -right-24 top-1/2 -translate-y-1/2 text-white/[0.04] md:right-0"

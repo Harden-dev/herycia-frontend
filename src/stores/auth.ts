@@ -21,8 +21,8 @@ import { useSalonStore } from '@/stores/salon'
 import { SELECTED_PLAN_KEY } from '@/lib/subscription'
 import { useSubscriptionStore } from '@/stores/subscription'
 
-const TOKEN_KEY = 'herycia_token'
-const USER_KEY = 'herycia_user'
+const TOKEN_KEY = 'manyan_token'
+const USER_KEY = 'manyan_user'
 
 function loadUser(): AuthenticatedUser | null {
   const raw = localStorage.getItem(USER_KEY)

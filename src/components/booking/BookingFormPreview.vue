@@ -114,7 +114,7 @@ function isStepCurrent(key: DemoStep) {
           <span class="h-2.5 w-2.5 rounded-full bg-white/20" />
           <span class="h-2.5 w-2.5 rounded-full bg-white/20" />
         </div>
-        <span class="text-[10px] font-medium text-primary-100/60">herycia.ci/booking</span>
+        <span class="text-[10px] font-medium text-primary-100/60">votre-lien/booking</span>
       </div>
 
       <!-- Stepper vertical pills -->

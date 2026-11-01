@@ -36,7 +36,7 @@ function upgradeLabel(target: PublicPlan) {
 <template>
   <section class="rounded-xl border border-border bg-card p-6">
     <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Abonnement</p>
-    <h2 class="mt-1 text-lg font-semibold text-foreground">Mon plan Herycia</h2>
+    <h2 class="mt-1 text-lg font-semibold text-foreground">Mon plan MANYAN</h2>
 
     <template v-if="store.loading && !sub">
       <Skeleton class="mt-4 h-24 w-full rounded-lg" />
@@ -76,7 +76,7 @@ function upgradeLabel(target: PublicPlan) {
       >
         <p class="text-sm font-medium text-danger-900">Essai ou abonnement expiré</p>
         <p class="mt-1 text-xs text-danger-800">
-          Payez votre plan {{ plan.name }} pour retrouver l'accès à Herycia.
+          Payez votre plan {{ plan.name }} pour retrouver l'accès à MANYAN.
         </p>
         <Button
           class="mt-3 bg-primary-600 text-white hover:bg-primary-800"

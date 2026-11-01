@@ -15,6 +15,7 @@ export interface PublicSalonBooking {
   name: string
   slug: string
   logo_url?: string | null
+  city?: string | null
   employees: PublicBookingEmployee[]
   services: PublicBookingService[]
 }

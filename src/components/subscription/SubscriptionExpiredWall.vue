@@ -20,7 +20,7 @@ function goToPayment() {
       <p class="text-lg font-semibold text-foreground">Abonnement expiré</p>
       <p class="mt-2 text-sm text-muted-foreground">
         Votre période d'essai ou votre abonnement est terminé. Payez votre plan pour continuer à
-        utiliser Herycia.
+        utiliser MANYAN.
       </p>
       <Button class="mt-6 bg-primary-600 text-white hover:bg-primary-800" @click="goToPayment">
         Payer mon abonnement

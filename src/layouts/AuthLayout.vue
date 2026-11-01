@@ -3,7 +3,7 @@ import '@/assets/auth.css'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import AuthBrandPanel from '@/components/auth/AuthBrandPanel.vue'
-import HeryciaWordmark from '@/components/brand/HeryciaWordmark.vue'
+import BrandLogo from '@/components/brand/BrandLogo.vue'
 
 const route = useRoute()
 const isLogin = computed(() => route.name === 'login')
@@ -31,8 +31,8 @@ const heading = computed(() => {
 <template>
   <div class="auth-page flex min-h-screen bg-card">
     <div class="flex flex-1 flex-col px-6 py-8 sm:px-10 lg:px-16">
-      <RouterLink to="/" class="w-fit rounded-lg" aria-label="Herycia, retour à l’accueil">
-        <HeryciaWordmark />
+      <RouterLink to="/" class="w-fit rounded-lg" aria-label="MANYAN, retour à l’accueil">
+        <BrandLogo size="lg" />
       </RouterLink>
 
       <main class="mx-auto flex w-full flex-1 flex-col justify-center py-12" :class="formMaxWidth">
@@ -59,7 +59,7 @@ const heading = computed(() => {
         </p>
       </main>
 
-      <p class="text-xs text-muted-foreground">© {{ new Date().getFullYear() }} Herycia</p>
+      <p class="text-xs text-muted-foreground">© {{ new Date().getFullYear() }} MANYAN</p>
     </div>
 
     <AuthBrandPanel />

@@ -2,23 +2,67 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/logo-herycia.png" />
-    <link rel="apple-touch-icon" href="/logo-herycia.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Herycia - Gestion de salon de coiffure en Côte d'Ivoire</title>
+    <title>MANYAN : réservation et file d’attente pour salons de coiffure</title>
     <meta
       name="description"
-      content="Herycia est une application de gestion de salon de coiffure. Elle permet de gérer les rendez-vous, les clients, les coiffeurs, les services, les recettes, etc."
+      content="Réservation en ligne, arrivée par QR code et file d’attente pour les salons de coiffure en Côte d’Ivoire. Vos clients savent quand vient leur tour."
     />
-    <meta
-      name="keywords"
-      content="salon, coiffure, gestion, rendez-vous, clients, coiffeurs, services, recettes"
-    />
-    <meta name="author" content="Herycia" />
     <meta name="robots" content="index, follow" />
-    <meta name="googlebot" content="index, follow" />
     <meta name="google" content="notranslate" />
-    <meta name="google" content="notranslate" />
+    <meta name="theme-color" content="#0d0d0d" />
+    <link rel="canonical" href="__SITE_URL__/" />
+    <link rel="icon" type="image/png" href="/manyan-icon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- Aperçus de lien (WhatsApp, Facebook, LinkedIn, X) : lus sans JavaScript. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="fr_CI" />
+    <meta property="og:site_name" content="MANYAN" />
+    <meta property="og:title" content="MANYAN : réservation et file d’attente pour salons de coiffure" />
+    <meta
+      property="og:description"
+      content="Vos clients réservent en ligne, scannent un QR code en arrivant et voient leur tour arriver. Essai gratuit 7 jours."
+    />
+    <meta property="og:url" content="__SITE_URL__/" />
+    <meta property="og:image" content="__SITE_URL__/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="MANYAN, la file d’attente de votre salon sur le téléphone de vos clients" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="MANYAN : réservation et file d’attente pour salons de coiffure" />
+    <meta
+      name="twitter:description"
+      content="Vos clients réservent en ligne, scannent un QR code en arrivant et voient leur tour arriver."
+    />
+    <meta name="twitter:image" content="__SITE_URL__/og-image.png" />
+
+    <!-- Polices : connexion anticipée, chargement non bloquant. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=Space+Grotesk:wght@400..700&family=Instrument+Serif:ital@0;1&display=swap"
+    />
+
+    <!-- Données structurées : le produit et ses offres. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "MANYAN",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "inLanguage": "fr",
+        "url": "__SITE_URL__/",
+        "description": "Réservation en ligne, arrivée par QR code et file d’attente pour les salons de coiffure en Côte d’Ivoire.",
+        "areaServed": { "@type": "Country", "name": "Côte d’Ivoire" },
+        "offers": [
+          { "@type": "Offer", "name": "Basic", "price": "5000", "priceCurrency": "XOF" },
+          { "@type": "Offer", "name": "Pro", "price": "15000", "priceCurrency": "XOF" }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="app"></div>

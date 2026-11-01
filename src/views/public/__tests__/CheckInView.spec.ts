@@ -145,7 +145,7 @@ describe('CheckInView', () => {
   it('utilise le rendez-vous mémorisé sur le téléphone sans demander le numéro', async () => {
     const now = new Date()
     localStorage.setItem(
-      'herycia_bookings',
+      'manyan_bookings',
       JSON.stringify([
         { slug: 'salon-test', tracking_token: 'rdv-memo', scheduled_at: now.toISOString() },
       ]),
