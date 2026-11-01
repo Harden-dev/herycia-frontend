@@ -1,0 +1,181 @@
+name: Déploiement VPS
+
+# Déploie le front sur le VPS à chaque push sur main, après les vérifications de la CI.
+# Bouton « Run workflow » : redéployer une branche, ou revenir à la version précédente.
+#
+# Configuration GitHub :
+#   Variables du dépôt (Settings → Secrets and variables → Actions → Variables) :
+#     VITE_API_URL, VITE_SITE_URL, VPS_PATH (défaut /var/www/manyan-front), VPS_PORT (défaut 22)
+#   Secrets de l'environnement « production » (Settings → Environments → production) :
+#     VPS_HOST, VPS_USER, VPS_SSH_KEY, VPS_KNOWN_HOSTS
+# Mise en place du serveur : deploy/README.md
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Action
+        type: choice
+        options: [deploy, rollback]
+        default: deploy
+
+permissions:
+  contents: read
+
+# Un seul déploiement à la fois ; on ne coupe jamais un déploiement en cours.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    if: github.event_name == 'push' || inputs.action == 'deploy'
+    uses: ./.github/workflows/ci.yml
+
+  build:
+    name: Build de production
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      release: ${{ steps.release.outputs.id }}
+    env:
+      VITE_API_URL: ${{ vars.VITE_API_URL }}
+      VITE_SITE_URL: ${{ vars.VITE_SITE_URL }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Vérifier la configuration
+        run: |
+          if [ -z "$VITE_API_URL" ]; then
+            echo "::error::Variable VITE_API_URL manquante (environnement production)."
+            exit 1
+          fi
+          [ -n "$VITE_SITE_URL" ] || echo "::warning::VITE_SITE_URL vide : pas d'URL canonique ni de sitemap."
+
+      - name: Identifiant de version
+        id: release
+        run: echo "id=$(date -u +%Y%m%d%H%M%S)-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Installer les dépendances
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build-only
+
+      - name: Marquer la version
+        env:
+          RELEASE: ${{ steps.release.outputs.id }}
+        run: printf '{"release":"%s","commit":"%s"}\n' "$RELEASE" "$GITHUB_SHA" > dist/version.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+  deploy:
+    name: Mise en ligne
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: production
+      url: ${{ vars.VITE_SITE_URL }}
+    env:
+      RELEASE: ${{ needs.build.outputs.release }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_PORT: ${{ vars.VPS_PORT || '22' }}
+      VPS_PATH: ${{ vars.VPS_PATH || '/var/www/manyan-front' }}
+      SITE_URL: ${{ vars.VITE_SITE_URL }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: deploy
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Préparer la connexion SSH
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Envoyer la version
+        run: |
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/deploy_key -p $VPS_PORT -o StrictHostKeyChecking=yes" \
+            dist/ "$VPS_USER@$VPS_HOST:$VPS_PATH/releases/$RELEASE/"
+
+      - name: Basculer sur la nouvelle version
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "$VPS_PORT" -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" \
+            "bash -s -- switch '$VPS_PATH' '$RELEASE'" < deploy/remote.sh
+
+      - name: Vérifier la version en ligne
+        if: env.SITE_URL != ''
+        run: |
+          for i in 1 2 3 4 5; do
+            online=$(curl -fsS "$SITE_URL/version.json?t=$(date +%s)" | sed -n 's/.*"release":"\([^"]*\)".*/\1/p' || true)
+            if [ "$online" = "$RELEASE" ]; then
+              echo "Version $RELEASE en ligne."
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "::error::Le site ne sert pas la version $RELEASE (reçu : '${online:-rien}')."
+          exit 1
+
+  rollback:
+    name: Retour à la version précédente
+    if: github.event_name == 'workflow_dispatch' && inputs.action == 'rollback'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: production
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_PORT: ${{ vars.VPS_PORT || '22' }}
+      VPS_PATH: ${{ vars.VPS_PATH || '/var/www/manyan-front' }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: deploy
+
+      - name: Préparer la connexion SSH
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Revenir à la version précédente
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "$VPS_PORT" -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" \
+            "bash -s -- rollback '$VPS_PATH'" < deploy/remote.sh

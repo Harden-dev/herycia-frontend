@@ -1,0 +1,46 @@
+# /etc/nginx/sites-available/manyan-front — front MANYAN (application Vue, fichiers statiques)
+# Remplacer exemple.ci par votre domaine, puis : certbot --nginx -d exemple.ci
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name exemple.ci www.exemple.ci;
+
+    # Version active (lien symbolique basculé à chaque déploiement).
+    root /var/www/manyan-front/current;
+    index index.html;
+
+    # Compression
+    gzip on;
+    gzip_comp_level 5;
+    gzip_min_length 1024;
+    gzip_types text/css application/javascript application/json image/svg+xml text/plain application/xml;
+
+    # En-têtes de sécurité
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+    # Fichiers versionnés par Vite (nom avec empreinte) : cache d'un an.
+    location /assets/ {
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        add_header X-Content-Type-Options "nosniff" always;
+        try_files $uri =404;
+    }
+
+    # Toujours la dernière version : page d'entrée et marqueur de version.
+    location = /index.html {
+        add_header Cache-Control "no-cache";
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    }
+    location = /version.json {
+        add_header Cache-Control "no-store";
+    }
+
+    # Application monopage : toute route inconnue renvoie index.html (le routeur Vue prend le relais).
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
