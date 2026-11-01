@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import { IconCheck } from '@tabler/icons-vue'
 import LandingButton from '@/components/landing/LandingButton.vue'
 import LandingSectionHeader from '@/components/landing/LandingSectionHeader.vue'
+import LandingReveal from '@/components/landing/LandingReveal.vue'
 import { FALLBACK_PUBLIC_PLANS } from '@/lib/plans-fallback'
 import { SELECTED_PLAN_KEY } from '@/lib/subscription'
 import { fetchPublicPlans } from '@/services/plans.service'
@@ -44,16 +45,17 @@ function price(plan: PublicPlan) {
 <template>
   <section id="tarifs" class="px-4 py-16 md:px-10 md:py-24">
     <div class="mx-auto max-w-6xl">
-      <LandingSectionHeader
-        title="Deux offres, sans engagement."
-        description="7 jours d’essai gratuit sur chaque offre, sans carte bancaire. Vous choisissez ensuite."
-      />
+      <LandingReveal>
+        <LandingSectionHeader
+          title="Deux offres, sans engagement."
+          description="7 jours d’essai gratuit sur chaque offre, sans carte bancaire. Vous choisissez ensuite."
+        />
+      </LandingReveal>
 
       <div class="grid max-w-4xl gap-6 md:grid-cols-2" data-testid="pricing-plans">
+        <LandingReveal v-for="(plan, index) in plans" :key="plan.id" :delay="index * 0.12" class="h-full">
         <article
-          v-for="plan in plans"
-          :key="plan.id"
-          class="flex flex-col rounded-xl border bg-card p-6 md:p-8"
+          class="flex h-full flex-col rounded-xl border bg-card p-6 transition-shadow duration-300 hover:shadow-[0_20px_50px_-20px_rgb(61_43_2/0.25)] md:p-8"
           :class="isFeatured(plan) ? 'border-primary-600 ring-1 ring-primary-600' : 'border-border'"
         >
           <div class="flex items-center justify-between gap-3">
@@ -89,6 +91,7 @@ function price(plan: PublicPlan) {
             </RouterLink>
           </LandingButton>
         </article>
+        </LandingReveal>
       </div>
     </div>
   </section>

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import LandingButton from '@/components/landing/LandingButton.vue'
+import LandingReveal from '@/components/landing/LandingReveal.vue'
 </script>
 
 <template>
   <section class="border-t border-border px-4 py-16 md:px-10 md:py-20">
-    <div
+    <LandingReveal
       class="mx-auto flex max-w-6xl flex-col gap-8 md:flex-row md:items-center md:justify-between"
     >
       <div class="max-w-xl">
@@ -23,6 +24,6 @@ import LandingButton from '@/components/landing/LandingButton.vue'
           <RouterLink to="/login">Se connecter</RouterLink>
         </LandingButton>
       </div>
-    </div>
+    </LandingReveal>
   </section>
 </template>

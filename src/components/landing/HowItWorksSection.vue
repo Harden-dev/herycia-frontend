@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { motion } from 'motion-v'
 import LandingSectionHeader from '@/components/landing/LandingSectionHeader.vue'
+import LandingReveal from '@/components/landing/LandingReveal.vue'
 
 const steps = [
   {
@@ -20,17 +22,21 @@ const steps = [
 <template>
   <section class="bg-secondary px-4 py-16 md:px-10 md:py-24">
     <div class="mx-auto max-w-6xl">
-      <LandingSectionHeader title="Pour commencer, trois étapes." />
+      <LandingReveal>
+        <LandingSectionHeader title="Pour commencer, trois étapes." />
+      </LandingReveal>
       <ol class="grid gap-6 md:grid-cols-3">
-        <li
-          v-for="(step, index) in steps"
-          :key="step.title"
-          class="rounded-xl border border-border bg-card p-6"
-        >
+        <LandingReveal v-for="(step, index) in steps" :key="step.title" as="li" :delay="index * 0.12">
+          <motion.div
+            class="h-full rounded-xl border border-border bg-card p-6 hover:border-primary-300"
+            :while-hover="{ y: -6 }"
+            :transition="{ type: 'spring', stiffness: 300, damping: 22 }"
+          >
           <p class="font-display text-3xl font-semibold text-primary-600">{{ index + 1 }}</p>
           <h3 class="mt-4 text-base font-semibold text-foreground">{{ step.title }}</h3>
           <p class="mt-2 text-[15px] leading-relaxed text-muted-foreground">{{ step.text }}</p>
-        </li>
+          </motion.div>
+        </LandingReveal>
       </ol>
     </div>
   </section>
