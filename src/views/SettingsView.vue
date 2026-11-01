@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { IconCopy, IconDownload, IconUpload } from '@tabler/icons-vue'
+import { IconUpload } from '@tabler/icons-vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import SettingsSubscriptionCard from '@/components/subscription/SettingsSubscriptionCard.vue'
+import BookingQrCard from '@/components/settings/BookingQrCard.vue'
 import CheckinQrCard from '@/components/queue/CheckinQrCard.vue'
+import LateToleranceCard from '@/components/queue/LateToleranceCard.vue'
 import { usePaymentCallback } from '@/composables/usePaymentCallback'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,7 +15,7 @@ import { toast } from '@/lib/toast'
 import { getApiErrorMessage } from '@/lib/api'
 import { initials, resolveMediaUrl } from '@/lib/utils'
 import { useAuthStore } from '@/stores/auth'
-import { downloadBookingQr, fetchSalon, updateSalon, uploadSalonLogo } from '@/services/salon.service'
+import { fetchSalon, updateSalon, uploadSalonLogo } from '@/services/salon.service'
 import type { SalonDetail } from '@/types/salon'
 import { SALON_CITIES } from '@/lib/permissions'
 import {
@@ -30,7 +32,6 @@ const salon = ref<SalonDetail | null>(null)
 const loading = ref(true)
 const saving = ref(false)
 const uploadingLogo = ref(false)
-const downloadingQr = ref(false)
 const error = ref<string | null>(null)
 const logoInputRef = ref<HTMLInputElement | null>(null)
 
@@ -102,13 +103,6 @@ async function save() {
   }
 }
 
-async function copyBookingLink() {
-  const link = salon.value?.booking_link ?? authStore.user?.salon?.booking_link
-  if (!link) return
-  await navigator.clipboard.writeText(link)
-  toast.success('Lien copié')
-}
-
 function validateLogoFile(file: File): string | null {
   const allowed = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp']
   if (!allowed.includes(file.type)) {
@@ -149,25 +143,6 @@ async function onLogoSelected(event: Event) {
     uploadingLogo.value = false
   }
 }
-
-async function downloadQr() {
-  downloadingQr.value = true
-  try {
-    const blob = await downloadBookingQr()
-    const url = URL.createObjectURL(blob)
-    const slug = salon.value?.slug ?? 'salon'
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `booking-qr-${slug}.png`
-    a.click()
-    URL.revokeObjectURL(url)
-    toast.success('QR téléchargé')
-  } catch (e) {
-    toast.error(getApiErrorMessage(e))
-  } finally {
-    downloadingQr.value = false
-  }
-}
 </script>
 
 <template>
@@ -186,25 +161,29 @@ async function downloadQr() {
       </p>
 
       <template v-if="loading">
-        <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <Skeleton class="h-80 w-full rounded-xl" />
-          <Skeleton class="h-80 w-full rounded-xl" />
+        <Skeleton class="h-72 w-full rounded-xl" />
+        <div class="grid gap-6 xl:grid-cols-2">
+          <Skeleton class="h-72 w-full rounded-xl" />
+          <Skeleton class="h-72 w-full rounded-xl" />
         </div>
       </template>
 
-      <div v-else class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
-        <form
-          class="space-y-4 rounded-xl border border-border bg-card p-6"
-          @submit.prevent="save"
-        >
-          <div class="rounded-xl border border-border bg-secondary/30 p-4">
-            <Label class="text-sm font-medium text-foreground">Logo du salon</Label>
-            <p class="mt-1 text-xs text-muted-foreground">
-              JPEG, PNG ou WebP — 2 Mo max.
+      <template v-else>
+        <!-- Informations du salon -->
+        <section class="space-y-3" aria-labelledby="settings-salon">
+          <div>
+            <h2 id="settings-salon" class="text-lg font-semibold text-foreground">
+              Informations du salon
+            </h2>
+            <p class="text-sm text-muted-foreground">
+              Affichées sur votre page de réservation et dans les messages envoyés aux clients.
             </p>
-            <div class="mt-4 flex flex-wrap items-center gap-4">
+          </div>
+
+          <form class="rounded-xl border border-border bg-card" @submit.prevent="save">
+            <div class="flex flex-wrap items-center gap-4 border-b border-border p-5">
               <div
-                class="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-primary-50"
+                class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-primary-50"
               >
                 <img
                   v-if="logoSrc"
@@ -216,125 +195,107 @@ async function downloadQr() {
                   {{ initials(salon?.name ?? 'S') }}
                 </span>
               </div>
-              <div class="flex flex-col gap-2">
-                <input
-                  ref="logoInputRef"
-                  type="file"
-                  class="hidden"
-                  :accept="LOGO_ACCEPT"
-                  @change="onLogoSelected"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  class="cursor-pointer gap-2"
-                  :disabled="uploadingLogo"
-                  @click="openLogoPicker"
-                >
-                  <IconUpload :size="16" />
-                  {{ uploadingLogo ? 'Envoi en cours…' : 'Changer le logo' }}
-                </Button>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium text-foreground">Logo du salon</p>
+                <p class="text-xs text-muted-foreground">JPEG, PNG ou WebP — 2 Mo max.</p>
+              </div>
+              <input
+                ref="logoInputRef"
+                type="file"
+                class="hidden"
+                :accept="LOGO_ACCEPT"
+                @change="onLogoSelected"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                class="w-full cursor-pointer gap-2 sm:w-auto"
+                :disabled="uploadingLogo"
+                @click="openLogoPicker"
+              >
+                <IconUpload :size="16" />
+                {{ uploadingLogo ? 'Envoi en cours…' : 'Changer le logo' }}
+              </Button>
+            </div>
+
+            <div class="grid gap-4 p-5 sm:grid-cols-2">
+              <div class="space-y-2">
+                <Label for="salon-name">Nom du salon</Label>
+                <Input id="salon-name" v-model="name" required />
+              </div>
+              <div class="space-y-2">
+                <Label>Ville</Label>
+                <Select v-model="city">
+                  <SelectTrigger class="w-full">
+                    <SelectValue placeholder="Ville" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem v-for="c in SALON_CITIES" :key="c" :value="c">{{ c }}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div class="space-y-2">
+                <Label for="salon-wa">WhatsApp</Label>
+                <Input id="salon-wa" v-model="whatsapp" type="tel" required />
+              </div>
+              <div class="space-y-2">
+                <Label for="salon-phone">Téléphone salon</Label>
+                <Input id="salon-phone" v-model="phone" type="tel" />
+              </div>
+              <div class="space-y-2 sm:col-span-2">
+                <Label for="salon-address">Adresse</Label>
+                <Input id="salon-address" v-model="address" />
               </div>
             </div>
-          </div>
 
-          <div class="space-y-2">
-            <Label for="salon-name">Nom du salon</Label>
-            <Input id="salon-name" v-model="name" required />
-          </div>
-          <div class="space-y-2">
-            <Label for="salon-wa">WhatsApp</Label>
-            <Input id="salon-wa" v-model="whatsapp" type="tel" required />
-          </div>
-          <div class="space-y-2">
-            <Label for="salon-phone">Téléphone salon</Label>
-            <Input id="salon-phone" v-model="phone" type="tel" />
-          </div>
-          <div class="space-y-2">
-            <Label>Ville</Label>
-            <Select v-model="city">
-              <SelectTrigger class="w-full">
-                <SelectValue placeholder="Ville" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem v-for="c in SALON_CITIES" :key="c" :value="c">{{ c }}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div class="space-y-2">
-            <Label for="salon-address">Adresse</Label>
-            <Input id="salon-address" v-model="address" />
-          </div>
+            <div class="flex justify-end border-t border-border p-4">
+              <Button
+                type="submit"
+                class="w-full cursor-pointer bg-primary-600 hover:bg-primary-800 sm:w-auto"
+                :disabled="saving"
+              >
+                {{ saving ? 'Enregistrement…' : 'Enregistrer' }}
+              </Button>
+            </div>
+          </form>
+        </section>
 
-          <Button
-            type="submit"
-            class="w-full cursor-pointer bg-primary-600 hover:bg-primary-800"
-            :disabled="saving"
-          >
-            {{ saving ? 'Enregistrement…' : 'Enregistrer' }}
-          </Button>
-        </form>
-
-        <aside
-          v-if="salon?.booking_link"
-          class="rounded-xl border border-border bg-card p-6 lg:sticky lg:top-6"
-        >
-          <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Réservation en ligne
-          </p>
-          <h2 class="mt-1 text-lg font-semibold text-foreground">Partager votre lien</h2>
-          <p class="mt-2 text-sm text-muted-foreground">
-            Le QR pointe vers la même page que votre lien public de réservation.
-          </p>
-
-          <div
-            class="mt-5 flex justify-center rounded-xl border border-primary-200 bg-primary-50/50 p-4"
-          >
-            <img
-              v-if="salon.booking_qr_code"
-              :src="salon.booking_qr_code"
-              alt="QR code réservation"
-              width="300"
-              height="300"
-              class="h-auto w-full max-w-[220px] rounded-lg bg-white p-2 shadow-sm"
+        <!-- QR codes -->
+        <section v-if="salon" class="space-y-3" aria-labelledby="settings-qr">
+          <div>
+            <h2 id="settings-qr" class="text-lg font-semibold text-foreground">Vos QR codes</h2>
+            <p class="text-sm text-muted-foreground">
+              Deux QR, deux moments : l’un pour réserver à distance, l’autre à afficher dans le
+              salon pour signaler son arrivée.
+            </p>
+          </div>
+          <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+            <BookingQrCard
+              v-if="salon.booking_link"
+              :slug="salon.slug"
+              :booking-link="salon.booking_link"
+              :qr-code="salon.booking_qr_code"
             />
-            <p v-else class="py-8 text-center text-sm text-muted-foreground">
-              QR temporairement indisponible.
-              <br />
-              Utilisez le lien ci-dessous.
+            <CheckinQrCard :slug="salon.slug" />
+          </div>
+        </section>
+
+        <!-- File d'attente -->
+        <section v-if="salon" class="space-y-3" aria-labelledby="settings-queue">
+          <div>
+            <h2 id="settings-queue" class="text-lg font-semibold text-foreground">
+              File d’attente
+            </h2>
+            <p class="text-sm text-muted-foreground">
+              Règles appliquées quand un client signale son arrivée.
             </p>
           </div>
-
-          <div class="mt-4 space-y-2">
-            <Label class="text-xs text-muted-foreground">Lien de réservation</Label>
-            <p class="break-all rounded-lg border border-border bg-secondary/50 px-3 py-2 font-mono text-xs text-foreground">
-              {{ salon.booking_link }}
-            </p>
-          </div>
-
-          <div class="mt-4 flex flex-col gap-2 sm:flex-row lg:flex-col">
-            <Button
-              type="button"
-              variant="outline"
-              class="flex-1 cursor-pointer gap-2"
-              @click="copyBookingLink"
-            >
-              <IconCopy :size="16" />
-              Copier le lien
-            </Button>
-            <Button
-              type="button"
-              class="flex-1 cursor-pointer gap-2 bg-primary-600 hover:bg-primary-800"
-              :disabled="downloadingQr"
-              @click="downloadQr"
-            >
-              <IconDownload :size="16" />
-              {{ downloadingQr ? 'Téléchargement…' : 'Télécharger le QR' }}
-            </Button>
-          </div>
-          <CheckinQrCard :slug="salon.slug" />
-        </aside>
-      </div>
+          <LateToleranceCard
+            :minutes="salon.late_tolerance_minutes ?? 15"
+            @saved="(data) => (salon = data)"
+          />
+        </section>
+      </template>
     </template>
   </div>
 </template>
