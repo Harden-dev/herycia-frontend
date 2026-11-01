@@ -1,10 +1,39 @@
 # /etc/nginx/sites-available/manyan-front — front MANYAN (application Vue, fichiers statiques)
-# Remplacer exemple.ci par votre domaine, puis : certbot --nginx -d exemple.ci
+#
+# Remplacer manyan.exemple.ci par votre domaine (4 occurrences).
+# Le certificat est obtenu AVANT d'activer ce fichier (voir deploy/README.md, étape 1).
+#
+# HTTP/2 : « listen 443 ssl http2; » fonctionne sur toutes les versions de nginx.
+# Avec nginx ≥ 1.25.1, on peut écrire « listen 443 ssl; » + « http2 on; » (même effet).
 
+# --- HTTP : tout est redirigé vers HTTPS (sauf la validation Let's Encrypt) ---
 server {
     listen 80;
     listen [::]:80;
-    server_name exemple.ci www.exemple.ci;
+    server_name manyan.exemple.ci;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/letsencrypt;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+# --- HTTPS + HTTP/2 ---
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name manyan.exemple.ci;
+
+    ssl_certificate     /etc/letsencrypt/live/manyan.exemple.ci/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/manyan.exemple.ci/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache shared:MANYAN_SSL:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
 
     # Version active (lien symbolique basculé à chaque déploiement).
     root /var/www/manyan-front/current;
@@ -12,11 +41,14 @@ server {
 
     # Compression
     gzip on;
+    gzip_vary on;
     gzip_comp_level 5;
     gzip_min_length 1024;
     gzip_types text/css application/javascript application/json image/svg+xml text/plain application/xml;
 
-    # En-têtes de sécurité
+    # En-têtes de sécurité (répétés dans les « location » qui ajoutent leurs propres en-têtes :
+    # nginx n'hérite pas des add_header du bloc parent dans ce cas).
+    add_header Strict-Transport-Security "max-age=31536000" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
@@ -24,6 +56,7 @@ server {
     # Fichiers versionnés par Vite (nom avec empreinte) : cache d'un an.
     location /assets/ {
         add_header Cache-Control "public, max-age=31536000, immutable";
+        add_header Strict-Transport-Security "max-age=31536000" always;
         add_header X-Content-Type-Options "nosniff" always;
         try_files $uri =404;
     }
@@ -31,12 +64,14 @@ server {
     # Toujours la dernière version : page d'entrée et marqueur de version.
     location = /index.html {
         add_header Cache-Control "no-cache";
+        add_header Strict-Transport-Security "max-age=31536000" always;
         add_header X-Content-Type-Options "nosniff" always;
         add_header X-Frame-Options "SAMEORIGIN" always;
         add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     }
     location = /version.json {
         add_header Cache-Control "no-store";
+        add_header Strict-Transport-Security "max-age=31536000" always;
     }
 
     # Application monopage : toute route inconnue renvoie index.html (le routeur Vue prend le relais).

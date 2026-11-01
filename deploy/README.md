@@ -21,23 +21,41 @@ Les 5 dernières versions restent sur le serveur. **Retour arrière** : onglet *
 
 ## 1. Préparer le VPS (une seule fois)
 
-Exemple pour Ubuntu/Debian, en root :
+Exemple pour Ubuntu/Debian, en root. Remplacez `manyan.exemple.ci` par votre domaine, dont l'enregistrement DNS
+(type A) doit déjà pointer vers l'IP du VPS.
 
 ```bash
+# Paquets
+apt update && apt install -y nginx rsync certbot
+
 # Utilisateur dédié au déploiement, sans mot de passe
 adduser --disabled-password --gecos "" deploy
 
-# Dossier du site : écrit par deploy, lu par nginx
-mkdir -p /var/www/manyan-front/releases
+# Dossier du site : écrit par deploy, lu par nginx (groupe www-data)
+mkdir -p /var/www/manyan-front/releases /var/www/letsencrypt
 chown -R deploy:www-data /var/www/manyan-front
 chmod -R 755 /var/www/manyan-front
 
-# nginx + certificat HTTPS
-apt install -y nginx rsync certbot python3-certbot-nginx
-cp nginx.conf.example /etc/nginx/sites-available/manyan-front   # adapter le domaine
-ln -s /etc/nginx/sites-available/manyan-front /etc/nginx/sites-enabled/
+# Certificat HTTPS (le temps de l'obtenir, nginx sert le dossier de validation)
+cat > /etc/nginx/sites-available/manyan-front <<'NGINX'
+server {
+    listen 80;
+    listen [::]:80;
+    server_name manyan.exemple.ci;
+    location /.well-known/acme-challenge/ { root /var/www/letsencrypt; }
+}
+NGINX
+ln -sf /etc/nginx/sites-available/manyan-front /etc/nginx/sites-enabled/manyan-front
 nginx -t && systemctl reload nginx
-certbot --nginx -d exemple.ci -d www.exemple.ci
+certbot certonly --webroot -w /var/www/letsencrypt -d manyan.exemple.ci
+
+# Configuration définitive (HTTPS + HTTP/2) : contenu de deploy/nginx.conf.example
+nano /etc/nginx/sites-available/manyan-front
+nginx -t && systemctl reload nginx
+
+# Renouvellement automatique du certificat, puis rechargement de nginx
+echo 'deploy-hook = systemctl reload nginx' >> /etc/letsencrypt/cli.ini
+certbot renew --dry-run
 ```
 
 ## 2. Clé SSH de déploiement
