@@ -2,7 +2,7 @@
 import HeryciaWordmark from '@/components/brand/HeryciaWordmark.vue'
 
 const links = [
-  { href: '#reservation', label: 'Réservation' },
+  { href: '#reservation', label: 'Parcours client' },
   { href: '#au-salon', label: 'Au salon' },
   { href: '#tarifs', label: 'Tarifs' },
 ]

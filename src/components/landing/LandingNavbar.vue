@@ -3,14 +3,14 @@ import HeryciaWordmark from '@/components/brand/HeryciaWordmark.vue'
 import LandingButton from '@/components/landing/LandingButton.vue'
 
 const links = [
-  { href: '#reservation', label: 'Réservation' },
+  { href: '#reservation', label: 'Parcours client' },
   { href: '#au-salon', label: 'Au salon' },
   { href: '#tarifs', label: 'Tarifs' },
 ]
 </script>
 
 <template>
-  <header class="sticky top-0 z-50 border-b border-border bg-background px-4 md:px-10">
+  <header class="sticky top-0 z-50 border-b border-foreground/10 bg-[#f6f2ea] px-4 md:px-10">
     <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 py-3">
       <RouterLink to="/" class="rounded-lg" aria-label="Herycia, accueil">
         <HeryciaWordmark />

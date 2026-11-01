@@ -2,7 +2,6 @@
 import { onMounted, ref } from 'vue'
 import { IconCheck } from '@tabler/icons-vue'
 import LandingButton from '@/components/landing/LandingButton.vue'
-import LandingSectionHeader from '@/components/landing/LandingSectionHeader.vue'
 import LandingReveal from '@/components/landing/LandingReveal.vue'
 import { FALLBACK_PUBLIC_PLANS } from '@/lib/plans-fallback'
 import { SELECTED_PLAN_KEY } from '@/lib/subscription'
@@ -43,13 +42,17 @@ function price(plan: PublicPlan) {
 </script>
 
 <template>
-  <section id="tarifs" class="px-4 py-16 md:px-10 md:py-24">
+  <section id="tarifs" class="landing-cream px-4 py-20 md:px-10 md:py-28">
     <div class="mx-auto max-w-6xl">
-      <LandingReveal>
-        <LandingSectionHeader
-          title="Deux offres, sans engagement."
-          description="7 jours d’essai gratuit sur chaque offre, sans carte bancaire. Vous choisissez ensuite."
-        />
+      <LandingReveal class="mb-12">
+        <p class="text-xs font-medium uppercase tracking-[0.3em] text-muted-foreground">Tarifs</p>
+        <h2 class="mt-4 text-[30px] font-semibold uppercase leading-[1.08] tracking-tight md:text-[44px]">
+          Deux offres,
+          <span class="landing-serif text-[1.15em] text-primary-600">sans engagement.</span>
+        </h2>
+        <p class="mt-4 max-w-xl text-[16px] text-muted-foreground">
+          7 jours d’essai gratuit sur chaque offre, sans carte bancaire. Vous choisissez ensuite.
+        </p>
       </LandingReveal>
 
       <div class="grid max-w-4xl gap-6 md:grid-cols-2" data-testid="pricing-plans">
