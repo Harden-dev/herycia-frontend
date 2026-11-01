@@ -5,6 +5,10 @@ import { createPinia } from 'pinia'
 
 import App from './App.vue'
 import router from './router'
+import { migrateLegacyStorageKeys } from './lib/storage-migration'
+
+// Avant toute lecture du stockage par les stores : reprise des anciennes clés « herycia_* ».
+migrateLegacyStorageKeys()
 
 const app = createApp(App)
 

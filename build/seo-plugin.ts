@@ -31,7 +31,7 @@ export function seoPlugin(siteUrl: string | undefined): Plugin {
   const base = (siteUrl ?? '').replace(/\/$/, '')
 
   return {
-    name: 'herycia-seo',
+    name: 'manyan-seo',
     transformIndexHtml(html) {
       if (base) return html.replaceAll('__SITE_URL__', base)
       return html

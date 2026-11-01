@@ -2,7 +2,7 @@
  * Rendez-vous pris depuis ce téléphone, mémorisés localement pour que le client n'ait pas à
  * ressaisir son numéro en scannant le QR d'arrivée du salon.
  */
-const STORAGE_KEY = 'herycia_bookings'
+const STORAGE_KEY = 'manyan_bookings'
 const MAX_ENTRIES = 20
 
 export interface RememberedBooking {

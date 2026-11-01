@@ -8,7 +8,7 @@ import LandingReveal from '@/components/landing/LandingReveal.vue'
   <section class="landing-dark landing-grain border-b border-white/10 px-4 py-24 md:px-10 md:py-32">
     <LandingReveal class="relative mx-auto max-w-6xl">
       <h2 class="max-w-4xl text-[36px] font-semibold uppercase leading-[1.04] tracking-tight md:text-[68px]">
-        Essayez Herycia dans votre salon,
+        Essayez MANYAN dans votre salon,
         <span class="landing-serif text-[1.12em] text-primary-300">pendant 7 jours.</span>
       </h2>
       <p class="mt-6 max-w-xl text-[17px] text-white/60">

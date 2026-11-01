@@ -1,10 +1,11 @@
 import type { RouteLocationNormalized } from 'vue-router'
+import { BRAND_NAME } from '@/lib/brand'
 
 /**
  * SEO côté client : titre, description, indexation et URL canonique de chaque page.
  * Le nom du produit est centralisé ici (et dans index.html) pour un futur renommage.
  */
-export const SITE_NAME = 'Herycia'
+export const SITE_NAME = BRAND_NAME
 
 export const DEFAULT_DESCRIPTION =
   'Réservation en ligne, arrivée par QR code et file d’attente pour les salons de coiffure en Côte d’Ivoire. Vos clients savent quand vient leur tour.'
