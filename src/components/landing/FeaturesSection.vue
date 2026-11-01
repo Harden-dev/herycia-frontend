@@ -13,7 +13,7 @@ const features = [
 </script>
 
 <template>
-  <section id="fonctionnalites" class="landing-cream px-4 py-20 md:px-10 md:py-28">
+  <section id="fonctionnalites" class="landing-cream px-4 pb-20 pt-4 md:px-10 md:pb-28 md:pt-8">
     <div class="mx-auto max-w-6xl">
       <LandingReveal>
         <p class="text-xs font-medium uppercase tracking-[0.3em] text-muted-foreground">
