@@ -2,8 +2,11 @@ name: CI
 
 on:
   push:
-    branches: [main, master, dev]
+    # main est vérifié par le workflow de déploiement (qui appelle cette CI).
+    branches: [dev]
   pull_request:
+  # Réutilisée par le déploiement : rien ne part sur le VPS sans ces vérifications.
+  workflow_call:
 
 permissions:
   contents: read
