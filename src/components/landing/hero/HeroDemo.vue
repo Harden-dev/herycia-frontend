@@ -70,7 +70,7 @@ const event = computed(() => salonEvents[props.step] ?? salonEvents[0]!)
 
     <div class="relative mx-auto w-[272px]">
       <!-- Événement côté salon -->
-      <div class="pointer-events-none absolute -left-48 top-24 z-30 hidden w-56 xl:block">
+      <div class="pointer-events-none absolute -left-48 bottom-24 z-30 hidden w-56 xl:block">
         <AnimatePresence mode="wait">
           <motion.div
             :key="step"

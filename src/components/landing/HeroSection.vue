@@ -55,7 +55,7 @@ const enter = (delay: number) => ({
 </script>
 
 <template>
-  <section ref="heroRef" class="relative overflow-hidden border-b border-border px-4 md:px-10">
+  <section ref="heroRef" class="relative overflow-hidden px-4 md:px-10">
     <!-- Halos dorés qui dérivent lentement -->
     <div class="pointer-events-none absolute inset-0" aria-hidden="true">
       <div class="landing-dots absolute inset-0" />
@@ -89,14 +89,14 @@ const enter = (delay: number) => ({
 
         <motion.h1
           v-bind="enter(0.08)"
-          class="mt-6 text-[38px] font-semibold leading-[1.12] tracking-tight text-foreground md:text-[54px]"
+          class="mt-6 text-[32px] font-semibold uppercase leading-[1.08] tracking-tight text-foreground md:text-[46px]"
         >
           Vos clients
           <template v-for="(verb, index) in verbs" :key="verb.label">
           <span class="whitespace-nowrap">
             <button
               type="button"
-              class="relative cursor-pointer whitespace-nowrap transition-colors"
+              class="relative cursor-pointer whitespace-nowrap uppercase transition-colors"
               :class="step === index ? 'text-primary-600' : 'text-foreground hover:text-primary-600'"
               :aria-label="`Voir l’étape : ${verb.label}`"
               @click="select(index)"
@@ -110,7 +110,7 @@ const enter = (delay: number) => ({
             >{{ verb.after }}</span
           >{{ ' ' }}
           </template>
-          sans un seul appel.
+          <span class="landing-serif text-[1.18em] leading-none text-primary-600">sans un seul appel.</span>
         </motion.h1>
 
         <motion.p
@@ -122,13 +122,17 @@ const enter = (delay: number) => ({
         </motion.p>
 
         <motion.div v-bind="enter(0.24)" class="mt-8 flex flex-wrap items-center gap-3">
-          <LandingButton variant="primary" class="group h-12 px-6">
-            <RouterLink to="/register" class="inline-flex items-center gap-2">
+          <LandingButton variant="primary" class="group h-12 rounded-full pl-6 pr-1.5">
+            <RouterLink to="/register" class="inline-flex items-center gap-3">
               Essayer 7 jours gratuitement
-              <IconArrowRight :size="18" class="transition-transform group-hover:translate-x-1" />
+              <span
+                class="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 transition-transform duration-300 group-hover:-rotate-45"
+              >
+                <IconArrowRight :size="18" />
+              </span>
             </RouterLink>
           </LandingButton>
-          <LandingButton variant="outline" class="h-12 px-6">
+          <LandingButton variant="outline" class="h-12 rounded-full bg-transparent px-6">
             <a href="#tarifs">Voir les tarifs</a>
           </LandingButton>
         </motion.div>
