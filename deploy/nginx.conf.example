@@ -3,8 +3,10 @@
 # Remplacer manyan.exemple.ci par votre domaine (4 occurrences).
 # Le certificat est obtenu AVANT d'activer ce fichier (voir deploy/README.md, étape 1).
 #
-# HTTP/2 : « listen 443 ssl http2; » fonctionne sur toutes les versions de nginx.
-# Avec nginx ≥ 1.25.1, on peut écrire « listen 443 ssl; » + « http2 on; » (même effet).
+# HTTP/2 : syntaxe de nginx ≥ 1.25.1 (« http2 on; »).
+# Sur un nginx plus ancien (nginx -v), remplacer les deux « listen 443 » et « http2 on; » par :
+#     listen 443 ssl http2;
+#     listen [::]:443 ssl http2;
 
 # --- HTTP : tout est redirigé vers HTTPS (sauf la validation Let's Encrypt) ---
 server {
@@ -23,8 +25,9 @@ server {
 
 # --- HTTPS + HTTP/2 ---
 server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
     server_name manyan.exemple.ci;
 
     ssl_certificate     /etc/letsencrypt/live/manyan.exemple.ci/fullchain.pem;
