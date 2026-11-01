@@ -17,6 +17,7 @@ function normalizePublicSalonBooking(
       name: raw.salon.name,
       slug: raw.salon.slug,
       logo_url: raw.salon.logo_url ?? null,
+      city: raw.salon.city ?? null,
       services: raw.services ?? [],
       employees: raw.employees ?? [],
     }

@@ -14,6 +14,7 @@ function dismiss(id: number) {
   <div
     class="pointer-events-none fixed top-4 right-4 z-[100] flex w-full max-w-sm flex-col items-end gap-2 px-4 sm:px-0"
     aria-live="polite"
+    role="region"
     aria-label="Notifications"
   >
     <TransitionGroup

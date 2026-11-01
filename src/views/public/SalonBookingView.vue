@@ -12,6 +12,7 @@ import { getApiErrorMessage } from '@/lib/api'
 import { toast } from '@/lib/toast'
 import { getRdvTrackPath, pathFromTrackingLink } from '@/lib/booking'
 import { createPublicBooking, fetchPublicSalon } from '@/services/booking.service'
+import { applySeo } from '@/lib/seo'
 import { rememberBooking } from '@/lib/booking-memory'
 import { isoToDMY } from '@/lib/utils'
 import type { PublicSalonBooking } from '@/types/booking'
@@ -41,6 +42,15 @@ onMounted(async () => {
     const response = await fetchPublicSalon(slug)
     if (!response.success) throw new Error(response.message)
     salon.value = response.data
+    // Page indexable propre à chaque salon : « Réserver chez Salon Élégance | … »
+    applySeo(
+      {
+        title: `Réserver chez ${response.data.name}`,
+        description: `Prenez rendez-vous en ligne chez ${response.data.name}${response.data.city ? ` à ${response.data.city}` : ''} : choisissez la prestation, le coiffeur et l’heure.`,
+        index: true,
+      },
+      `/booking/${slug}`,
+    )
   } catch (e) {
     error.value = getApiErrorMessage(e)
   } finally {

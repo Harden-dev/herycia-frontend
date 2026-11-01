@@ -123,16 +123,16 @@ useMotionValueEvent(scrollYProgress, 'change', (value) => {
 
     <!-- Mobile et tablette : liste simple -->
     <div class="px-4 py-20 md:px-10 lg:hidden">
-      <p class="text-xs font-medium uppercase tracking-[0.3em] text-white/50">Le parcours client</p>
+      <h2 class="text-xs font-medium uppercase tracking-[0.3em] text-white/50">Le parcours client</h2>
       <ol class="mt-10 space-y-16">
         <LandingReveal v-for="(step, index) in steps" :key="step.label" as="li">
           <p class="text-xs font-medium uppercase tracking-[0.25em] text-primary-400">
             0{{ index + 1 }} · {{ step.label }}
           </p>
-          <h2 class="mt-3 text-[34px] font-semibold uppercase leading-[1.05] tracking-tight">
+          <h3 class="mt-3 text-[34px] font-semibold uppercase leading-[1.05] tracking-tight">
             {{ step.title }}
             <span class="landing-serif text-[1.15em] text-primary-300">{{ step.accent }}</span>
-          </h2>
+          </h3>
           <p class="mt-4 text-[16px] leading-relaxed text-white/65">{{ step.text }}</p>
           <div class="mt-8 flex justify-center">
             <JourneyVisual :step="index" />

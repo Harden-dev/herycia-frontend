@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { applyRouteSeo } from '@/lib/seo'
 import { useAuthStore } from '@/stores/auth'
 import { useSubscriptionStore } from '@/stores/subscription'
 
@@ -13,30 +14,31 @@ const router = createRouter({
       path: '/',
       name: 'landing',
       component: () => import('@/views/LandingPageView.vue'),
+      meta: { seo: { index: true } },
     },
     {
       path: '/booking/:slug',
       name: 'salon-booking',
       component: () => import('@/views/public/SalonBookingView.vue'),
-      meta: { publicBooking: true },
+      meta: { seo: { title: 'Réserver en ligne', index: true }, publicBooking: true },
     },
     {
       path: '/rdv/:token',
       name: 'rdv-track',
       component: () => import('@/views/public/BookingTrackView.vue'),
-      meta: { publicBooking: true },
+      meta: { seo: { title: 'Suivi de rendez-vous' }, publicBooking: true },
     },
     {
       path: '/arrivee/:slug',
       name: 'checkin',
       component: () => import('@/views/public/CheckInView.vue'),
-      meta: { publicBooking: true },
+      meta: { seo: { title: 'Arrivée au salon' }, publicBooking: true },
     },
     {
       path: '/file/:token',
       name: 'queue-track',
       component: () => import('@/views/public/QueueTrackView.vue'),
-      meta: { publicBooking: true },
+      meta: { seo: { title: 'Votre place dans la file' }, publicBooking: true },
     },
     {
       path: '/login',
@@ -47,6 +49,7 @@ const router = createRouter({
           path: '',
           name: 'login',
           component: () => import('@/views/auth/LoginView.vue'),
+          meta: { seo: { title: 'Connexion' } },
         },
       ],
     },
@@ -59,6 +62,7 @@ const router = createRouter({
           path: '',
           name: 'forgot-password',
           component: () => import('@/views/auth/ForgotPasswordView.vue'),
+          meta: { seo: { title: 'Mot de passe oublié' } },
         },
       ],
     },
@@ -71,6 +75,7 @@ const router = createRouter({
           path: '',
           name: 'register',
           component: () => import('@/views/auth/RegisterView.vue'),
+          meta: { seo: { title: 'Créer le compte de votre salon', description: 'Créez le compte de votre salon et essayez gratuitement pendant 7 jours : réservation en ligne, QR d’arrivée et file d’attente.', index: true } },
         },
       ],
     },
@@ -232,5 +237,8 @@ router.beforeEach(async (to) => {
     }
   }
 })
+
+// Titre, description et indexation de chaque page (pages privées en noindex par défaut).
+router.afterEach((to) => applyRouteSeo(to))
 
 export default router

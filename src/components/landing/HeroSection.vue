@@ -77,7 +77,9 @@ const enter = (delay: number) => ({
       <div>
 
         <motion.h1
-          v-bind="enter(0.08)"
+          :initial="{ y: 12 }"
+          :animate="{ y: 0 }"
+          :transition="{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }"
           class="text-[32px] font-semibold uppercase leading-[1.06] tracking-tight text-foreground md:text-[46px]"
         >
           Vos clients
