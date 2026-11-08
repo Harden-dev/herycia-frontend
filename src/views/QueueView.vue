@@ -20,7 +20,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
-import { getApiErrorMessage } from '@/lib/api'
+import { extractValidationErrors, getApiErrorMessage } from '@/lib/api'
 import { toast } from '@/lib/toast'
 import { formatDate, formatTime } from '@/lib/utils'
 import { fetchServices } from '@/services/prestations.service'
@@ -174,8 +174,10 @@ async function chooseLate(choice: LateChoice) {
 const walkInOpen = ref(false)
 const walkInServices = ref<WalkInService[]>([])
 const walkInSubmitting = ref(false)
+const walkInErrors = ref<Record<string, string> | null>(null)
 
 async function openWalkIn() {
+  walkInErrors.value = null
   walkInOpen.value = true
   try {
     const response = await fetchServices({ is_active: true, per_page: 100 })
@@ -196,6 +198,7 @@ async function fetchWalkInOptions(serviceId: string): Promise<WalkInOptions> {
 
 async function submitWalkIn(payload: WalkInPayload) {
   walkInSubmitting.value = true
+  walkInErrors.value = null
   try {
     const result = (await staffWalkIn(payload)).data
     if (result.status === 'queued') {
@@ -206,6 +209,7 @@ async function submitWalkIn(payload: WalkInPayload) {
     walkInOpen.value = false
     await load()
   } catch (e) {
+    walkInErrors.value = extractValidationErrors(e)
     toast.error(getApiErrorMessage(e))
   } finally {
     walkInSubmitting.value = false
@@ -449,6 +453,7 @@ onBeforeUnmount(() => window.clearInterval(timer))
           :services="walkInServices"
           :fetch-options="fetchWalkInOptions"
           :submitting="walkInSubmitting"
+          :server-errors="walkInErrors"
           submit-label="Ajouter à la file"
           @submit="submitWalkIn"
         />

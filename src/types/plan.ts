@@ -64,7 +64,12 @@ export interface PaystackInitializePlan {
 }
 
 export interface PaystackInitializeResponse {
-  authorization_url: string
+  /** Lien de paiement GeniusPay (nom documenté par le back). */
+  checkout_url?: string
+  /** Ancien nom du lien, conservé en repli. */
+  authorization_url?: string
+  /** `true` si la réponse rejoue une tentative existante (même clé d'idempotence). */
+  idempotent_replay?: boolean
   access_code: string
   reference: string
   amount: number

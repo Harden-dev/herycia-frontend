@@ -9,7 +9,7 @@ import { useSubscriptionStore } from '@/stores/subscription'
 
 const router = useRouter()
 const store = useSubscriptionStore()
-const { paying, checkout } = usePaystackCheckout()
+const { paying, locked, checkout } = usePaystackCheckout()
 
 const cta = computed(() => store.subscriptionCta)
 
@@ -47,13 +47,13 @@ async function onCtaClick() {
       <div>
         <p class="text-sm font-medium text-primary-900">{{ label }}</p>
         <p class="text-xs text-primary-700/80">
-          Paiement sécurisé via Paystack — Mobile Money, Wave, carte.
+          Paiement sécurisé — Mobile Money, Wave, carte.
         </p>
       </div>
     </div>
     <Button
       class="shrink-0 bg-primary-600 text-white hover:bg-primary-800"
-      :disabled="paying || cta.type === 'none'"
+      :disabled="locked || cta.type === 'none'"
       @click="onCtaClick"
     >
       {{

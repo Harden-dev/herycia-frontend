@@ -12,7 +12,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from '@/lib/toast'
-import { getApiErrorMessage } from '@/lib/api'
+import { extractValidationErrors, getApiErrorMessage } from '@/lib/api'
+import {
+  collectErrors,
+  fieldError,
+  labelName,
+  normalizeOptionalPhoneCI,
+  optionalPhoneCI,
+} from '@/lib/validators'
 import { initials, resolveMediaUrl } from '@/lib/utils'
 import { useAuthStore } from '@/stores/auth'
 import { fetchSalon, updateSalon, uploadSalonLogo } from '@/services/salon.service'
@@ -43,6 +50,7 @@ const phone = ref('')
 const whatsapp = ref('')
 const city = ref('')
 const address = ref('')
+const fieldErrors = ref<Record<string, string>>({})
 
 const logoSrc = computed(() => resolveMediaUrl(salon.value?.logo_url))
 
@@ -80,13 +88,19 @@ onMounted(async () => {
 })
 
 async function save() {
+  fieldErrors.value = collectErrors({
+    name: fieldError(labelName, name.value),
+    phone: fieldError(optionalPhoneCI, phone.value),
+    whatsapp_number: fieldError(optionalPhoneCI, whatsapp.value),
+  })
+  if (Object.keys(fieldErrors.value).length > 0) return
   saving.value = true
   error.value = null
   try {
     const response = await updateSalon({
-      name: name.value,
-      phone: phone.value || null,
-      whatsapp_number: whatsapp.value,
+      name: name.value.trim(),
+      phone: normalizeOptionalPhoneCI(phone.value),
+      whatsapp_number: normalizeOptionalPhoneCI(whatsapp.value) ?? '',
       city: city.value,
       address: address.value || null,
     })
@@ -95,6 +109,7 @@ async function save() {
     syncSalonBranding(response.data)
     toast.success(response.message)
   } catch (e) {
+    fieldErrors.value = extractValidationErrors(e) ?? {}
     const msg = getApiErrorMessage(e)
     error.value = msg
     toast.error(msg)
@@ -221,7 +236,16 @@ async function onLogoSelected(event: Event) {
             <div class="grid gap-4 p-5 sm:grid-cols-2">
               <div class="space-y-2">
                 <Label for="salon-name">Nom du salon</Label>
-                <Input id="salon-name" v-model="name" required />
+                <Input
+                  id="salon-name"
+                  v-model="name"
+                  maxlength="100"
+                  :aria-invalid="fieldErrors.name ? true : undefined"
+                  required
+                />
+                <p v-if="fieldErrors.name" class="text-xs text-danger-600">
+                  {{ fieldErrors.name }}
+                </p>
               </div>
               <div class="space-y-2">
                 <Label>Ville</Label>
@@ -237,10 +261,16 @@ async function onLogoSelected(event: Event) {
               <div class="space-y-2">
                 <Label for="salon-wa">WhatsApp</Label>
                 <Input id="salon-wa" v-model="whatsapp" type="tel" required />
+                <p v-if="fieldErrors.whatsapp_number" class="text-xs text-danger-600">
+                  {{ fieldErrors.whatsapp_number }}
+                </p>
               </div>
               <div class="space-y-2">
                 <Label for="salon-phone">Téléphone salon</Label>
                 <Input id="salon-phone" v-model="phone" type="tel" />
+                <p v-if="fieldErrors.phone" class="text-xs text-danger-600">
+                  {{ fieldErrors.phone }}
+                </p>
               </div>
               <div class="space-y-2 sm:col-span-2">
                 <Label for="salon-address">Adresse</Label>

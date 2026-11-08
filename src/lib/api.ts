@@ -154,6 +154,34 @@ export function getApiErrorMessage(error: unknown): string {
   return 'Une erreur est survenue'
 }
 
+export interface ApiErrorDetails {
+  status?: number
+  code?: string
+  /** Délai d'attente en secondes lu dans l'en-tête `Retry-After` (429). */
+  retryAfterSeconds?: number
+}
+
+function parseRetryAfter(value: unknown): number | undefined {
+  if (typeof value !== 'string' && typeof value !== 'number') return undefined
+  // En-tête vide : `Number('')` vaudrait 0 et afficherait « 0 seconde ».
+  if (typeof value === 'string' && value.trim() === '') return undefined
+  const seconds = Number(value)
+  if (Number.isFinite(seconds)) return Math.max(0, Math.ceil(seconds))
+  const date = Date.parse(String(value))
+  if (Number.isNaN(date)) return undefined
+  return Math.max(0, Math.ceil((date - Date.now()) / 1000))
+}
+
+export function getApiErrorDetails(error: unknown): ApiErrorDetails {
+  if (!axios.isAxiosError<ApiErrorBody>(error) || !error.response) return {}
+  const { status, data, headers } = error.response
+  return {
+    status,
+    code: data?.code ?? data?.error,
+    retryAfterSeconds: parseRetryAfter(headers?.['retry-after']),
+  }
+}
+
 export function extractValidationErrors(error: unknown): Record<string, string> | null {
   if (error instanceof ApiRequestError) return error.fieldErrors
   if (!axios.isAxiosError<ApiErrorBody>(error)) return null

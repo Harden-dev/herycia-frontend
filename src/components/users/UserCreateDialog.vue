@@ -26,9 +26,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { getApiErrorMessage } from '@/lib/api'
+import { extractValidationErrors, getApiErrorMessage } from '@/lib/api'
 import { STAFF_ROLE_OPTIONS } from '@/lib/permissions'
 import { toast } from '@/lib/toast'
+import { collectErrors, fieldError, normalizePhoneCI, personName, phoneCI } from '@/lib/validators'
 import { useUsersStore } from '@/stores/users'
 import type { SalonStaffRole } from '@/types'
 
@@ -45,6 +46,7 @@ const showPassword = ref(false)
 const showPasswordConfirm = ref(false)
 const submitting = ref(false)
 const formError = ref<string | null>(null)
+const fieldErrors = ref<Record<string, string>>({})
 
 const passwordsMatch = computed(
   () => password.value.length > 0 && password.value === passwordConfirmation.value,
@@ -70,6 +72,7 @@ function resetForm() {
   showPassword.value = false
   showPasswordConfirm.value = false
   formError.value = null
+  fieldErrors.value = {}
 }
 
 watch(open, (isOpen) => {
@@ -82,12 +85,17 @@ async function onSubmit() {
     formError.value = 'Les mots de passe ne correspondent pas.'
     return
   }
+  fieldErrors.value = collectErrors({
+    name: fieldError(personName, name.value),
+    phone: fieldError(phoneCI, phone.value),
+  })
+  if (Object.keys(fieldErrors.value).length > 0) return
   submitting.value = true
   formError.value = null
   try {
     await store.create({
       name: name.value.trim(),
-      phone: phone.value.trim(),
+      phone: normalizePhoneCI(phone.value),
       email: email.value.trim(),
       password: password.value,
       password_confirmation: passwordConfirmation.value,
@@ -96,6 +104,7 @@ async function onSubmit() {
     toast.success('Membre ajouté à l\'équipe')
     open.value = false
   } catch (e) {
+    fieldErrors.value = extractValidationErrors(e) ?? {}
     formError.value = getApiErrorMessage(e)
     toast.error(formError.value)
   } finally {
@@ -149,11 +158,14 @@ async function onSubmit() {
             <Input
               id="member-name"
               v-model="name"
+              maxlength="100"
+              :aria-invalid="fieldErrors.name ? true : undefined"
               placeholder="Awa Traoré"
               class="h-10 rounded-lg border-border bg-card pl-10"
               required
             />
           </div>
+          <p v-if="fieldErrors.name" class="text-xs text-danger-600">{{ fieldErrors.name }}</p>
         </div>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -168,12 +180,14 @@ async function onSubmit() {
               <Input
                 id="member-phone"
                 v-model="phone"
+                :aria-invalid="fieldErrors.phone ? true : undefined"
                 type="tel"
                 placeholder="2250708223344"
                 class="h-10 rounded-lg border-border bg-card pl-10 font-mono text-sm"
                 required
               />
             </div>
+            <p v-if="fieldErrors.phone" class="text-xs text-danger-600">{{ fieldErrors.phone }}</p>
           </div>
           <div class="space-y-2">
             <Label for="member-role">Rôle</Label>

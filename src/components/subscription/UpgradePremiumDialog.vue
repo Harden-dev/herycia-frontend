@@ -17,7 +17,7 @@ import type { PublicPlan } from '@/types/plan'
 
 const router = useRouter()
 const store = useSubscriptionStore()
-const { paying, checkout } = usePaystackCheckout()
+const { paying, locked, checkout } = usePaystackCheckout()
 const open = defineModel<boolean>('open', { default: false })
 
 const upgradePlans = computed(() => store.upgradePlans)
@@ -66,7 +66,7 @@ function goToSettings() {
             <Button
               size="sm"
               class="shrink-0 bg-primary-600 text-white hover:bg-primary-800"
-              :disabled="paying || !store.canCheckoutPlan(plan.code)"
+              :disabled="locked || !store.canCheckoutPlan(plan.code)"
               @click="onUpgrade(plan)"
             >
               {{ paying ? '…' : `Passer ${plan.name}` }}
@@ -89,7 +89,7 @@ function goToSettings() {
         <Button
           v-if="primaryUpgrade"
           class="bg-primary-600 text-white hover:bg-primary-800"
-          :disabled="paying"
+          :disabled="locked"
           @click="onUpgrade(primaryUpgrade)"
         >
           {{ paying ? 'Redirection…' : `Passer ${primaryUpgrade.name}` }}

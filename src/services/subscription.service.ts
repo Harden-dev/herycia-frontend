@@ -13,10 +13,13 @@ export async function fetchSubscriptionDetail(): Promise<ApiResponse<Subscriptio
 
 export async function initializeSubscriptionPayment(
   planCode: SalonPlanCode | string,
+  idempotencyKey: string,
+  signal?: AbortSignal,
 ): Promise<ApiResponse<PaystackInitializeResponse>> {
   const { data } = await api.post<ApiResponse<PaystackInitializeResponse>>(
     'v1/subscription/initialize',
     { plan_code: planCode },
+    { headers: { 'Idempotency-Key': idempotencyKey }, signal },
   )
   return data
 }

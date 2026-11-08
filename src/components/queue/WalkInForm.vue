@@ -4,8 +4,10 @@ import { IconLoader2, IconPhone, IconUser } from '@tabler/icons-vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useFieldErrors } from '@/composables/useFieldErrors'
 import { getApiErrorMessage } from '@/lib/api'
 import { formatCFA, formatTime } from '@/lib/utils'
+import { collectErrors, fieldError, normalizePhoneCI, personName, phoneCI } from '@/lib/validators'
 import type { WalkInOptions, WalkInPayload, WalkInService } from '@/types/queue'
 
 /**
@@ -17,6 +19,8 @@ const props = defineProps<{
   fetchOptions: (serviceId: string) => Promise<WalkInOptions>
   submitting?: boolean
   submitLabel?: string
+  /** Erreurs 422 renvoyées par le back (`errors.<champ>`). */
+  serverErrors?: Record<string, string> | null
 }>()
 
 const emit = defineEmits<{ submit: [payload: WalkInPayload] }>()
@@ -31,6 +35,9 @@ const phone = ref('')
 const options = ref<WalkInOptions | null>(null)
 const loadingOptions = ref(false)
 const optionsError = ref<string | null>(null)
+const { clientErrors, errors, clearFieldError } = useFieldErrors(() => props.serverErrors)
+watch(name, () => clearFieldError('name'))
+watch(phone, () => clearFieldError('phone'))
 
 const selectedService = computed(() => props.services.find((s) => s.id === serviceId.value) ?? null)
 const nothingAvailable = computed(
@@ -63,11 +70,16 @@ watch(serviceId, async (id) => {
 
 function onSubmit() {
   if (!canSubmit.value) return
+  clientErrors.value = collectErrors({
+    name: fieldError(personName, name.value),
+    phone: fieldError(phoneCI, phone.value),
+  })
+  if (Object.keys(clientErrors.value).length > 0) return
   emit('submit', {
     service_id: serviceId.value,
     stylist_id: stylistChoice.value === FIRST_AVAILABLE ? null : stylistChoice.value,
     name: name.value.trim(),
-    phone: phone.value.trim(),
+    phone: normalizePhoneCI(phone.value),
   })
 }
 </script>
@@ -167,8 +179,17 @@ function onSubmit() {
             :size="16"
             class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
           />
-          <Input id="walkin-name" v-model="name" placeholder="Votre nom" class="pl-9" required />
+          <Input
+            id="walkin-name"
+            v-model="name"
+            placeholder="Votre nom"
+            class="pl-9"
+            maxlength="100"
+            required
+            :aria-invalid="errors.name ? true : undefined"
+          />
         </div>
+        <p v-if="errors.name" class="text-xs text-danger-600">{{ errors.name }}</p>
       </div>
       <div class="space-y-2">
         <Label for="walkin-phone" class="text-sm font-medium">Téléphone</Label>
@@ -184,8 +205,10 @@ function onSubmit() {
             placeholder="07 08 11 22 33"
             class="pl-9"
             required
+            :aria-invalid="errors.phone ? true : undefined"
           />
         </div>
+        <p v-if="errors.phone" class="text-xs text-danger-600">{{ errors.phone }}</p>
       </div>
       <Button type="submit" class="w-full cursor-pointer" :disabled="!canSubmit">
         <IconLoader2 v-if="submitting" :size="16" class="mr-2 animate-spin" />

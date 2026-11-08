@@ -8,7 +8,7 @@ import BookingFormPreview from '@/components/booking/BookingFormPreview.vue'
 import PublicBookingForm from '@/components/booking/PublicBookingForm.vue'
 import PublicSalonBrand from '@/components/booking/PublicSalonBrand.vue'
 import { Skeleton } from '@/components/ui/skeleton'
-import { getApiErrorMessage } from '@/lib/api'
+import { extractValidationErrors, getApiErrorDetails, getApiErrorMessage } from '@/lib/api'
 import { toast } from '@/lib/toast'
 import { getRdvTrackPath, pathFromTrackingLink } from '@/lib/booking'
 import { createPublicBooking, fetchPublicSalon } from '@/services/booking.service'
@@ -27,6 +27,11 @@ const salon = ref<PublicSalonBooking | null>(null)
 const loading = ref(true)
 const submitting = ref(false)
 const error = ref<string | null>(null)
+const fieldErrors = ref<Record<string, string> | null>(null)
+
+const CODE_TOO_MANY_REQUESTS = 'too_many_requests'
+const TOO_MANY_BOOKINGS_MESSAGE =
+  'Ce numéro a atteint la limite de 5 réservations par jour. Réessayez demain ou contactez le salon.'
 const showSuccess = ref(false)
 const successRecap = ref<BookingSuccessRecap | null>(null)
 const pendingTrackPath = ref<string | null>(null)
@@ -80,6 +85,7 @@ async function onSubmit(payload: CreatePublicBookingPayload) {
   if (!salon.value) return
   submitting.value = true
   error.value = null
+  fieldErrors.value = null
   try {
     const response = await createPublicBooking(slug, payload)
     if (!response.success) throw new Error(response.message)
@@ -97,7 +103,11 @@ async function onSubmit(payload: CreatePublicBookingPayload) {
     pendingTrackPath.value = trackPath
     showSuccess.value = true
   } catch (e) {
-    const msg = getApiErrorMessage(e)
+    fieldErrors.value = extractValidationErrors(e)
+    const msg =
+      getApiErrorDetails(e).code === CODE_TOO_MANY_REQUESTS
+        ? TOO_MANY_BOOKINGS_MESSAGE
+        : getApiErrorMessage(e)
     error.value = msg
     toast.error(msg)
   } finally {
@@ -182,6 +192,7 @@ function onSuccessContinue() {
                 :employees="salon.employees"
                 :services="salon.services"
                 :loading="submitting"
+                :server-errors="fieldErrors"
                 @submit="onSubmit"
               />
             </div>

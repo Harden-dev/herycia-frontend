@@ -12,8 +12,9 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { getApiErrorMessage } from '@/lib/api'
+import { extractValidationErrors, getApiErrorMessage } from '@/lib/api'
 import { toast } from '@/lib/toast'
+import { fieldError, labelName } from '@/lib/validators'
 import { useServicesStore } from '@/stores/services'
 
 const open = defineModel<boolean>('open', { default: false })
@@ -24,6 +25,7 @@ const durationMin = ref('')
 const price = ref('')
 const submitting = ref(false)
 const formError = ref<string | null>(null)
+const nameError = ref<string | null>(null)
 
 const canSubmit = computed(() => {
   const duration = Number(durationMin.value)
@@ -42,6 +44,7 @@ function resetForm() {
   durationMin.value = ''
   price.value = ''
   formError.value = null
+  nameError.value = null
 }
 
 watch(open, (isOpen) => {
@@ -50,6 +53,8 @@ watch(open, (isOpen) => {
 
 async function onSubmit() {
   if (!canSubmit.value || submitting.value) return
+  nameError.value = fieldError(labelName, name.value)
+  if (nameError.value) return
   submitting.value = true
   formError.value = null
   try {
@@ -61,6 +66,7 @@ async function onSubmit() {
     toast.success('Prestation ajoutée avec succès')
     open.value = false
   } catch (e) {
+    nameError.value = extractValidationErrors(e)?.name ?? null
     formError.value = getApiErrorMessage(e)
     toast.error(formError.value)
   } finally {
@@ -108,10 +114,13 @@ async function onSubmit() {
           <Input
             id="service-name"
             v-model="name"
+            maxlength="100"
+            :aria-invalid="nameError ? true : undefined"
             placeholder="Ex. Coupe homme"
             class="h-10 rounded-lg border-border bg-card"
             required
           />
+          <p v-if="nameError" class="text-xs text-danger-600">{{ nameError }}</p>
         </div>
 
         <div class="grid grid-cols-2 gap-4">

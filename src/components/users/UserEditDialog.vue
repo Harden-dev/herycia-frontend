@@ -19,9 +19,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { getApiErrorMessage } from '@/lib/api'
+import { extractValidationErrors, getApiErrorMessage } from '@/lib/api'
 import { STAFF_ROLE_OPTIONS } from '@/lib/permissions'
 import { toast } from '@/lib/toast'
+import { collectErrors, fieldError, normalizePhoneCI, personName, phoneCI } from '@/lib/validators'
 import { useUsersStore } from '@/stores/users'
 import type { SalonStaffRole, StaffMember } from '@/types'
 
@@ -35,6 +36,7 @@ const email = ref('')
 const role = ref<SalonStaffRole>('stylist')
 const submitting = ref(false)
 const formError = ref<string | null>(null)
+const fieldErrors = ref<Record<string, string>>({})
 
 const canSubmit = computed(
   () =>
@@ -51,6 +53,7 @@ function fillFromUser(u: StaffMember) {
   email.value = u.email ?? ''
   role.value = u.role
   formError.value = null
+  fieldErrors.value = {}
 }
 
 watch(
@@ -66,18 +69,24 @@ watch(
 
 async function onSubmit() {
   if (!canSubmit.value || !user.value || submitting.value) return
+  fieldErrors.value = collectErrors({
+    name: fieldError(personName, name.value),
+    phone: fieldError(phoneCI, phone.value),
+  })
+  if (Object.keys(fieldErrors.value).length > 0) return
   submitting.value = true
   formError.value = null
   try {
     await store.update(user.value.id, {
       name: name.value.trim(),
-      phone: phone.value.trim(),
+      phone: normalizePhoneCI(phone.value),
       email: email.value.trim(),
       role: role.value,
     })
     toast.success('Membre modifié avec succès')
     open.value = false
   } catch (e) {
+    fieldErrors.value = extractValidationErrors(e) ?? {}
     formError.value = getApiErrorMessage(e)
     toast.error(formError.value)
   } finally {
@@ -128,10 +137,13 @@ async function onSubmit() {
             <Input
               id="edit-member-name"
               v-model="name"
+              maxlength="100"
+              :aria-invalid="fieldErrors.name ? true : undefined"
               class="h-10 rounded-lg border-border bg-card pl-10"
               required
             />
           </div>
+          <p v-if="fieldErrors.name" class="text-xs text-danger-600">{{ fieldErrors.name }}</p>
         </div>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -146,11 +158,13 @@ async function onSubmit() {
               <Input
                 id="edit-member-phone"
                 v-model="phone"
+                :aria-invalid="fieldErrors.phone ? true : undefined"
                 type="tel"
                 class="h-10 rounded-lg border-border bg-card pl-10 font-mono text-sm"
                 required
               />
             </div>
+            <p v-if="fieldErrors.phone" class="text-xs text-danger-600">{{ fieldErrors.phone }}</p>
           </div>
           <div class="space-y-2">
             <Label for="edit-member-role">Rôle</Label>

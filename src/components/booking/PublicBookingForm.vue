@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { IconClock, IconLoader2 } from '@tabler/icons-vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useFieldErrors } from '@/composables/useFieldErrors'
 import { formatCFA } from '@/lib/utils'
+import { collectErrors, fieldError, normalizePhoneCI, personName, phoneCI } from '@/lib/validators'
 import type { CreatePublicBookingPayload } from '@/types/booking'
 import type { PublicBookingEmployee, PublicBookingService } from '@/types/booking'
 
@@ -14,6 +16,8 @@ const props = defineProps<{
   loading?: boolean
   horizontal?: boolean
   compact?: boolean
+  /** Erreurs 422 renvoyées par le back (`errors.<champ>`). */
+  serverErrors?: Record<string, string> | null
 }>()
 
 const emit = defineEmits<{
@@ -23,6 +27,9 @@ const emit = defineEmits<{
 const clientName = ref('')
 const clientPhone = ref('')
 const date = ref('')
+const { clientErrors, errors, clearFieldError } = useFieldErrors(() => props.serverErrors)
+watch(clientName, () => clearFieldError('client_name'))
+watch(clientPhone, () => clearFieldError('client_phone'))
 
 /** Bornes alignées sur le backend : pas de date passée, 90 jours maximum à l'avance. */
 const BOOKING_MAX_DAYS_AHEAD = 90
@@ -62,9 +69,14 @@ function selectEmployee(id: string) {
 
 function onSubmit() {
   if (!canSubmit.value || props.loading) return
+  clientErrors.value = collectErrors({
+    client_name: fieldError(personName, clientName.value),
+    client_phone: fieldError(phoneCI, clientPhone.value),
+  })
+  if (Object.keys(clientErrors.value).length > 0) return
   emit('submit', {
     client_name: clientName.value.trim(),
-    client_phone: clientPhone.value.trim(),
+    client_phone: normalizePhoneCI(clientPhone.value),
     service_id: serviceId.value,
     user_id: userId.value,
     date: date.value,
@@ -175,9 +187,12 @@ function onSubmit() {
           id="client-name"
           v-model="clientName"
           placeholder="Ex. Michel"
+          maxlength="100"
           required
           :disabled="loading"
+          :aria-invalid="errors.client_name ? true : undefined"
         />
+        <p v-if="errors.client_name" class="text-xs text-danger-600">{{ errors.client_name }}</p>
       </div>
       <div class="space-y-2">
         <Label for="client-phone">Téléphone</Label>
@@ -188,7 +203,9 @@ function onSubmit() {
           placeholder="07 48 75 49 18"
           required
           :disabled="loading"
+          :aria-invalid="errors.client_phone ? true : undefined"
         />
+        <p v-if="errors.client_phone" class="text-xs text-danger-600">{{ errors.client_phone }}</p>
       </div>
     </div>
 

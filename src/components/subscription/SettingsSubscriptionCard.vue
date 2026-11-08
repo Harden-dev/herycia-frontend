@@ -9,7 +9,7 @@ import { useSubscriptionStore } from '@/stores/subscription'
 import type { PublicPlan } from '@/types/plan'
 
 const store = useSubscriptionStore()
-const { paying, error, checkout, resetError } = usePaystackCheckout()
+const { paying, locked, error, checkout, resetError } = usePaystackCheckout()
 
 const sub = computed(() => store.subscription)
 const plan = computed(() => sub.value?.plan)
@@ -21,11 +21,7 @@ onMounted(async () => {
 async function onPay(planCode: string) {
   if (!store.canCheckoutPlan(planCode)) return
   resetError()
-  try {
-    await checkout(planCode)
-  } catch {
-    // error affiché via paying/error
-  }
+  await checkout(planCode)
 }
 
 function upgradeLabel(target: PublicPlan) {
@@ -63,7 +59,7 @@ function upgradeLabel(target: PublicPlan) {
         </div>
         <Button
           class="shrink-0 bg-primary-600 text-white hover:bg-primary-800"
-          :disabled="paying || !store.canCheckoutPlan(plan.code)"
+          :disabled="locked || !store.canCheckoutPlan(plan.code)"
           @click="onPay(plan.code)"
         >
           {{ paying ? 'Redirection…' : `Activer (${formatCFA(plan.price_fcfa)}/mois)` }}
@@ -80,7 +76,7 @@ function upgradeLabel(target: PublicPlan) {
         </p>
         <Button
           class="mt-3 bg-primary-600 text-white hover:bg-primary-800"
-          :disabled="paying"
+          :disabled="locked"
           @click="onPay(plan.code)"
         >
           {{ paying ? 'Redirection…' : 'Payer pour continuer' }}
@@ -108,7 +104,7 @@ function upgradeLabel(target: PublicPlan) {
       >
         <Button
           variant="outline"
-          :disabled="paying"
+          :disabled="locked"
           @click="onPay(plan.code)"
         >
           {{ paying ? 'Redirection…' : `Renouveler ${plan.name}` }}
@@ -128,7 +124,7 @@ function upgradeLabel(target: PublicPlan) {
             <p class="mt-2 text-sm font-semibold text-primary-800">{{ upgradePlan.price_label }}</p>
             <Button
               class="mt-3 w-full bg-primary-600 text-white hover:bg-primary-800"
-              :disabled="paying || !store.canCheckoutPlan(upgradePlan.code)"
+              :disabled="locked || !store.canCheckoutPlan(upgradePlan.code)"
               @click="onPay(upgradePlan.code)"
             >
               {{ paying ? 'Redirection…' : upgradeLabel(upgradePlan) }}

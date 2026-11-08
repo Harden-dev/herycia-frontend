@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue'
+import { computed, ref, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 import { getApiErrorMessage } from '@/lib/api'
 import {
@@ -29,6 +29,15 @@ export const useSubscriptionStore = defineStore('subscription', () => {
   const error = ref<string | null>(null)
   const upgradeModalOpen = ref(false)
   const blocked = ref(false)
+
+  /* Paiement d'abonnement : état partagé par tous les boutons « Payer » (bannière, paramètres, dialogue). */
+  const paymentPaying = ref(false)
+  const paymentError = ref<string | null>(null)
+  /** Vrai tant que le délai `Retry-After` d'un 429 n'est pas écoulé. */
+  const paymentCooldown = ref(false)
+  /** Requête d'initialisation en cours : deux clics simultanés la partagent. */
+  const paymentRequest = shallowRef<Promise<void> | null>(null)
+  let paymentCooldownTimer: ReturnType<typeof setTimeout> | undefined
 
   const trialDaysRemaining = computed(() => trialDaysLeft(subscription.value?.trial_ends_at))
   const renewalDaysRemaining = computed(() => renewalDaysLeft(subscription.value?.ends_at ?? null))
@@ -131,6 +140,14 @@ export const useSubscriptionStore = defineStore('subscription', () => {
     upgradeModalOpen.value = true
   }
 
+  function blockPaymentFor(seconds: number) {
+    clearTimeout(paymentCooldownTimer)
+    paymentCooldown.value = true
+    paymentCooldownTimer = setTimeout(() => {
+      paymentCooldown.value = false
+    }, seconds * 1000)
+  }
+
   function setBlocked(value: boolean) {
     blocked.value = value
   }
@@ -142,6 +159,7 @@ export const useSubscriptionStore = defineStore('subscription', () => {
     error.value = null
     blocked.value = false
     upgradeModalOpen.value = false
+    paymentError.value = null
   }
 
   return {
@@ -152,6 +170,10 @@ export const useSubscriptionStore = defineStore('subscription', () => {
     error,
     upgradeModalOpen,
     blocked,
+    paymentPaying,
+    paymentError,
+    paymentCooldown,
+    paymentRequest,
     trialDaysRemaining,
     renewalDaysRemaining,
     showTrialBanner,
@@ -172,6 +194,7 @@ export const useSubscriptionStore = defineStore('subscription', () => {
     canCheckoutPlan,
     openUpgradeModal,
     setBlocked,
+    blockPaymentFor,
     clear,
   }
 })

@@ -13,6 +13,7 @@ const props = withDefaults(
     type?: string
     placeholder?: string
     required?: boolean
+    maxlength?: number
     icon: Component
     modelValue?: string
     error?: string
@@ -54,6 +55,7 @@ function onInput(event: Event) {
         :type="type === 'password' ? (showPassword ? 'text' : 'password') : type"
         :placeholder="placeholder"
         :required="required"
+        :maxlength="maxlength"
         :value="modelValue"
         :class="
           cn(

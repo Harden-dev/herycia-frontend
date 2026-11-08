@@ -20,6 +20,13 @@ import {
 import { extractValidationErrors, getApiErrorMessage } from '@/lib/api'
 import { SALON_CITIES } from '@/lib/admin'
 import { toast } from '@/lib/toast'
+import {
+  collectErrors,
+  fieldError,
+  labelName,
+  normalizeOptionalPhoneCI,
+  optionalPhoneCI,
+} from '@/lib/validators'
 import { updateAdminSalon } from '@/services/admin.service'
 import type { AdminSalonListItem, SalonCity } from '@/types/admin'
 
@@ -50,14 +57,19 @@ watch(salon, (s) => {
 
 async function onSubmit() {
   if (!salon.value) return
+  fieldErrors.value = collectErrors({
+    name: fieldError(labelName, name.value),
+    phone: fieldError(optionalPhoneCI, phone.value),
+    whatsapp_number: fieldError(optionalPhoneCI, whatsapp.value),
+  })
+  if (Object.keys(fieldErrors.value).length > 0) return
   loading.value = true
   error.value = null
-  fieldErrors.value = {}
   try {
     const response = await updateAdminSalon(salon.value.id, {
       name: name.value.trim(),
-      phone: phone.value.trim() || undefined,
-      whatsapp_number: whatsapp.value.trim() || undefined,
+      phone: normalizeOptionalPhoneCI(phone.value) ?? undefined,
+      whatsapp_number: normalizeOptionalPhoneCI(whatsapp.value) ?? undefined,
       city: city.value || undefined,
       address: address.value.trim() || undefined,
     })
@@ -88,7 +100,13 @@ async function onSubmit() {
       <form class="flex flex-col gap-4" @submit.prevent="onSubmit">
         <div class="space-y-2">
           <Label for="salon-name">Nom</Label>
-          <Input id="salon-name" v-model="name" required />
+          <Input
+            id="salon-name"
+            v-model="name"
+            maxlength="100"
+            :aria-invalid="fieldErrors.name ? true : undefined"
+            required
+          />
           <p v-if="fieldErrors.name" class="text-xs text-danger-600">
             {{ fieldErrors.name }}
           </p>
@@ -109,11 +127,15 @@ async function onSubmit() {
         <div class="space-y-2">
           <Label for="salon-phone">Téléphone</Label>
           <Input id="salon-phone" v-model="phone" />
+          <p v-if="fieldErrors.phone" class="text-xs text-danger-600">{{ fieldErrors.phone }}</p>
         </div>
 
         <div class="space-y-2">
           <Label for="salon-whatsapp">WhatsApp</Label>
           <Input id="salon-whatsapp" v-model="whatsapp" />
+          <p v-if="fieldErrors.whatsapp_number" class="text-xs text-danger-600">
+            {{ fieldErrors.whatsapp_number }}
+          </p>
         </div>
 
         <div class="space-y-2">

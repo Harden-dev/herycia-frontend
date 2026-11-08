@@ -6,6 +6,16 @@ import AuthField from '@/components/auth/AuthField.vue'
 import { ApiRequestError } from '@/lib/api'
 import { SALON_CITIES } from '@/lib/permissions'
 import { getSelectedPlanCode, SELECTED_PLAN_KEY } from '@/lib/subscription'
+import {
+  collectErrors,
+  fieldError,
+  labelName,
+  normalizeOptionalPhoneCI,
+  normalizePhoneCI,
+  optionalPhoneCI,
+  personName,
+  phoneCI,
+} from '@/lib/validators'
 import { fetchPublicPlans } from '@/services/plans.service'
 import { useAuthStore } from '@/stores/auth'
 import type { PublicPlan } from '@/types/plan'
@@ -94,6 +104,17 @@ async function onSubmit() {
     return
   }
 
+  const clientErrors = collectErrors({
+    salon_name: fieldError(labelName, salon_name.value),
+    admin_name: fieldError(personName, admin_name.value),
+    phone: fieldError(phoneCI, phone.value),
+    whatsapp_number: fieldError(optionalPhoneCI, whatsapp_number.value),
+  })
+  if (Object.keys(clientErrors).length > 0) {
+    fieldErrors.value = clientErrors
+    return
+  }
+
   submitting.value = true
   formError.value = null
   fieldErrors.value = {}
@@ -102,11 +123,11 @@ async function onSubmit() {
 
   try {
     await authStore.register({
-      salon_name: salon_name.value,
+      salon_name: salon_name.value.trim(),
       city: city.value,
-      whatsapp_number: whatsapp_number.value,
-      admin_name: admin_name.value,
-      phone: phone.value,
+      whatsapp_number: normalizeOptionalPhoneCI(whatsapp_number.value) ?? '',
+      admin_name: admin_name.value.trim(),
+      phone: normalizePhoneCI(phone.value),
       password: password.value,
       password_confirmation: password_confirmation.value,
       plan_code: planCode.value,
@@ -159,6 +180,7 @@ async function onSubmit() {
         label="Nom du salon"
         placeholder="Ex: Michel Hair"
         required
+        :maxlength="100"
         :icon="IconBuildingStore"
         :error="fieldErrors.salon_name"
       />
@@ -168,6 +190,7 @@ async function onSubmit() {
         label="Nom du gérant"
         placeholder="Ex: Michel Kouassi"
         required
+        :maxlength="100"
         :icon="IconUser"
         :error="fieldErrors.admin_name"
       />

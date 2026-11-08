@@ -83,7 +83,7 @@ describe('CheckInView', () => {
 
     expect(queue.publicCheckIn).toHaveBeenCalledWith('salon-test', {
       key: 'cle',
-      phone: '0707000001',
+      phone: '2250707000001',
     })
     expect(router.currentRoute.value.name).toBe('queue-track')
     expect(router.currentRoute.value.params.token).toBe('file-token')
@@ -233,7 +233,7 @@ describe('CheckInView', () => {
       service_id: 'svc-1',
       stylist_id: null,
       name: 'Moussa',
-      phone: '0707999001',
+      phone: '2250707999001',
     })
     expect(router.currentRoute.value.name).toBe('queue-track')
   })

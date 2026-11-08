@@ -12,9 +12,10 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { getApiErrorMessage } from '@/lib/api'
+import { extractValidationErrors, getApiErrorMessage } from '@/lib/api'
 import { findTodayBooking } from '@/lib/booking-memory'
 import { formatDate, formatTime } from '@/lib/utils'
+import { normalizePhoneCI } from '@/lib/validators'
 import WalkInForm from '@/components/queue/WalkInForm.vue'
 import {
   fetchPublicWalkIn,
@@ -72,7 +73,7 @@ async function checkIn(byToken: boolean) {
       slug,
       byToken && remembered
         ? { key, tracking_token: remembered.tracking_token }
-        : { key, phone: phone.value.trim() },
+        : { key, phone: normalizePhoneCI(phone.value) },
     )
     await handleResult(response.data)
   } catch (e) {
@@ -103,6 +104,7 @@ const walkInMode = ref(false)
 const walkInServices = ref<WalkInService[]>([])
 const walkInLoading = ref(false)
 const walkInSubmitting = ref(false)
+const walkInErrors = ref<Record<string, string> | null>(null)
 
 async function startWalkIn() {
   error.value = null
@@ -125,10 +127,12 @@ async function fetchWalkInOptions(serviceId: string): Promise<WalkInOptions> {
 
 async function submitWalkIn(payload: WalkInPayload) {
   error.value = null
+  walkInErrors.value = null
   walkInSubmitting.value = true
   try {
     await handleResult((await publicWalkIn(slug, { ...payload, key })).data)
   } catch (e) {
+    walkInErrors.value = extractValidationErrors(e)
     error.value = getApiErrorMessage(e)
   } finally {
     walkInSubmitting.value = false
@@ -273,6 +277,7 @@ function dayAndTime(iso: string | null | undefined): string {
             :services="walkInServices"
             :fetch-options="fetchWalkInOptions"
             :submitting="walkInSubmitting"
+            :server-errors="walkInErrors"
             @submit="submitWalkIn"
           />
           <button
